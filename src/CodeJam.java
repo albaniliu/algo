@@ -92,8 +92,12 @@ public class CodeJam {
             this.start = s;
         }
     }
-    
+    long IMPO;
     public void run(BufferedReader br, BufferedWriter wr) throws IOException {
+
+        IMPO = 1000000000;
+        IMPO = IMPO * 1000000000l;
+
 
         String[] sp = br.readLine().split(" ");
         h = new int[2];
@@ -104,34 +108,47 @@ public class CodeJam {
         a[1] = Integer.parseInt(sp[3]);
         B = Integer.parseInt(sp[4]);
         D = Integer.parseInt(sp[5]);
-        int n = 101;
-        int ans = Integer.MAX_VALUE;
-        int heal = h[0];
-        int cue = 0;
-        for (int d = 0; d <= n; d++) {
-//            if (a[1] == 0) break;
-            if (d > 0) {
-                if (heal <= a[1] - D) {
-                    heal = h[0] - a[1];
-                    cue++;
-                }
-                a[1] -= D;
-                a[1] = Math.max(a[1], 0);
-                heal -= a[1];
-                if (heal <= 0) break;
-            }
-            int tmp = d + cue;
-            int[][][] dp = new int[n][n][n];
-            for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) for (int k = 0; k < n; k++) dp[i][j][k] = -1;
-            
-            boolean[][][] visited = new boolean[n][n][n];
-            int res = solve(dp, visited, heal, a[0], h[1]);
-            if (res == -1) continue;
-            tmp += res;
-            ans = Math.min(ans, tmp);
+        long lHd = h[0];
+        long Ak = a[1];
+        long Ad = a[0];
+        long Hd = h[0];
+        long Hk = h[1];
+        long dbturns = 0;
+        long ans = IMPO;
+        long aturns = sdiv(Hk, Ad);
+        long inc = 0;
+        while (sdiv(Hk, Ad + B) + 1 < sdiv(Hk, Ad)) {
+            Ad += B;
+            inc++;
+            aturns = sdiv(Hk, Ad) + inc;
         }
+        ans = nodebuff(aturns, Hd, Hd, Ak);
+
+        while (D > 0 && Ak > 0) {
+            if(lHd <= Ak-D && Hd-Ak <= Ak-D) {
+                // impossible
+                break;
+            }
+            else if (lHd <= Ak-D) {
+                // heal
+                lHd = Hd - Ak;
+                dbturns++;
+                continue;
+            }
+            else {
+                long oAk = Ak;
+                Ak = Ak - D;
+                if(Ak < 0) Ak = 0;
+                lHd = lHd - Ak;
+                dbturns++;
+                if (Ak > 0 && (Hd + Ak - 1) / Ak == (Hd + oAk - 1) / oAk) continue;
+            }
+            long nans = dbturns + nodebuff(aturns, Hd, lHd, Ak);
+            if (nans < ans) ans = nans;
+        }
+
         
-        if (ans == Integer.MAX_VALUE) {
+        if (ans == IMPO) {
             System.out.println("IMPOSSIBLE");
             wr.write("" + "IMPOSSIBLE");
         } else {
@@ -140,35 +157,28 @@ public class CodeJam {
         }
     }
 
-
-    private int solve(int[][][] dp, boolean[][][] visited, int hd, int ad, int hk) {
-        if (hd <= 0) return -1;
-        if (visited[hd][ad][hk]) {
-            return dp[hd][ad][hk];
-        }
-        visited[hd][ad][hk] = true;
-        if (hk <= ad) return 1;
-        int ans = Integer.MAX_VALUE;
-        int tmp = solve(dp, visited, hd - a[1], ad, hk - ad);
-        if (tmp != -1) {
-            ans = Math.min(ans, tmp+1);
-        }
-        tmp = solve(dp, visited, h[0] - a[1], ad, hk);
-        if (tmp != -1) {
-            ans = Math.min(ans, tmp+1);
-        }
-        tmp = solve(dp, visited, hd - a[1], Math.min(100, ad + B), hk);
-        if (tmp != -1) {
-            ans = Math.min(ans, tmp+1);
-        }
-        if (ans == Integer.MAX_VALUE) return -1;
-        return dp[hd][ad][hk] = ans;
+    private long sdiv(long a, long b) {
+        return (a + b - 1) / b;
     }
+
+    private long nodebuff(long aturns, long hd, long lHd, long ak) {
+        if (lHd > ak * (aturns - 1)) return aturns;
+        if (aturns == 1) return aturns;
+        long maxHit = sdiv(lHd, ak) - 1;
+        long oturns = aturns;
+        aturns -= maxHit;
+        hd -= ak;
+        if (hd <= 0) return IMPO;
+        long de = sdiv(hd, ak);
+        if (de == 1) return IMPO;
+        return oturns + 1 + (aturns - 2) / (de - 1);
+    }
+
 
     public static void main(String[] args) throws NumberFormatException, IOException {
         
-//      String fileName = "d://codejam/example.txt";
-//      String outFile = "d://codejam/example-out.txt";
+//      String fileName = "/Users/mobike/IdeaProjects/algo/example.txt";
+//      String outFile = "/Users/mobike/IdeaProjects/algo/example-out.txt";
 //      String fileName = "d://codejam/A-small-practice.in";
 //      String outFile = "d://codejam/A-small-out.txt";
 //      String fileName = "d://codejam/A-large-practice.in";
@@ -177,10 +187,10 @@ public class CodeJam {
 //      String outFile = "d://codejam/B-small-out.txt";
 //      String fileName = "d://codejam/B-large-practice.in";
 //      String outFile = "d://codejam/B-large-out.txt";
-      String fileName = "d://codejam/C-small-practice.in";
-      String outFile = "d://codejam/C-small-out.txt";
-//      String fileName = "d://codejam/C-large-practice.in";
-//      String outFile = "d://codejam/C-large-out.txt";
+//      String fileName = "/Users/mobike/IdeaProjects/algo/C-small-practice.in";
+//      String outFile = "/Users/mobike/IdeaProjects/algo/C-small-out.txt";
+      String fileName = "/Users/mobike/IdeaProjects/algo/C-large-practice.in";
+      String outFile = "/Users/mobike/IdeaProjects/algo/C-large-out.txt";
 //      String fileName = "d://codejam/D-small-practice.in";
 //      String outFile = "d://codejam/D-small-out.txt";
 //      String fileName = "d://codejam/D-large-practice.in";
