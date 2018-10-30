@@ -6,20 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -117,35 +104,72 @@ public class CodeJam {
         long ans = IMPO;
         long aturns = sdiv(Hk, Ad);
         long inc = 0;
-        while (sdiv(Hk, Ad + B) + 1 < sdiv(Hk, Ad)) {
+        while (sdiv(Hk, Ad + B) + 1 <= sdiv(Hk, Ad)) {
             Ad += B;
             inc++;
             aturns = sdiv(Hk, Ad) + inc;
         }
         ans = nodebuff(aturns, Hd, Hd, Ak);
 
-        while (D > 0 && Ak > 0) {
-            if(lHd <= Ak-D && Hd-Ak <= Ak-D) {
-                // impossible
-                break;
-            }
-            else if (lHd <= Ak-D) {
-                // heal
-                lHd = Hd - Ak;
-                dbturns++;
-                continue;
-            }
-            else {
-                long oAk = Ak;
-                Ak = Ak - D;
-                if(Ak < 0) Ak = 0;
-                lHd = lHd - Ak;
-                dbturns++;
-                if (Ak > 0 && (Hd + Ak - 1) / Ak == (Hd + oAk - 1) / oAk) continue;
-            }
+        if (ans == 1) {
+            System.out.println(ans);
+            wr.write("" + ans);
+            return;
+        }
+        if (Hd <= Ak) {
+            System.out.println("IMPOSSIBLE");
+            wr.write("" + "IMPOSSIBLE");
+            return;
+        }
+
+        if (ans == 2) {
+            System.out.println(ans);
+            wr.write("" + ans);
+            return;
+        }
+        if (Hd <= Ak - D + Ak - D * 2) {
+            System.out.println("IMPOSSIBLE");
+            wr.write("" + "IMPOSSIBLE");
+            return;
+        }
+
+        long hits = (Hd - 1) / Ak;
+        while (D > 0) {
+            hits ++;
+            long maxAk = (Hd + hits - 1) / hits - 1;
+            long debuff = (Ak - maxAk + D - 1) / D;
+            long[] pair = debuff(Hd, lHd, Ak, debuff);
+            dbturns += pair[0];
+            lHd = pair[1];
+            Ak = pair[2];
             long nans = dbturns + nodebuff(aturns, Hd, lHd, Ak);
             if (nans < ans) ans = nans;
+            if (Ak <= 0) break;
         }
+
+
+//        while (D > 0 && Ak > 0) {
+//            if(lHd <= Ak-D && Hd-Ak <= Ak-D) {
+//                // impossible
+//                break;
+//            }
+//            else if (lHd <= Ak-D) {
+//                // heal
+//                lHd = Hd - Ak;
+//                dbturns++;
+//                continue;
+//            }
+//            else {
+//                long oAk = Ak;
+//                Ak = Ak - D;
+//                if(Ak < 0) Ak = 0;
+//                lHd = lHd - Ak;
+//                dbturns++;
+//                if (Ak > 0 && (Hd + Ak - 1) / Ak == (Hd + oAk - 1) / oAk) continue;
+//            }
+//            long nans = dbturns + nodebuff(aturns, Hd, lHd, Ak);
+//            if (nans < ans) ans = nans;
+//        }
 
         
         if (ans == IMPO) {
@@ -155,6 +179,76 @@ public class CodeJam {
             System.out.println(ans);
             wr.write("" + ans);
         }
+    }
+
+    private long[] debuff(long hd, long lHd, long ak, long times) {
+        long[] res = new long[3];
+        if (lHd <= ak - D) {
+            long maxHits = (hd-1) / ak;
+            if (maxHits >= times) {
+                res[0] = times + 1;
+                lHd = nocure(hd-ak, ak, times);
+                res[1] = lHd;
+                res[2] = ak - D * times;
+                if (res[2] < 0) res[2] = 0;
+                return res;
+            } else {
+                long turn = times / maxHits;
+                res[0] += turn + 1 + times;
+                lHd = nocure(hd-ak, ak, times - maxHits * turn);
+                ak -= D * times;
+                res[1] = lHd;
+                res[2] = ak;
+                if (res[2] < 0) res[2] = 0;
+                return res;
+            }
+        }
+        if (ak <= D) {
+            res[0] = times;
+            res[1] = lHd;
+            res[2] = 0;
+            return res;
+        }
+
+        long maxHits = (lHd - 1) / (ak - D);
+        if (maxHits >= times) {
+            res[0] = times;
+            lHd = nocure(lHd, ak, times);
+            res[1] = lHd;
+            res[2] = ak - D * times;
+            if (res[2] < 0) res[2] = 0;
+            return res;
+        } else {
+            lHd = nocure(lHd, ak, maxHits);
+            res[0] += maxHits;
+            ak -= D * maxHits;
+            if (ak <= 0) {
+                res[0] = times;
+                res[1] = lHd;
+                res[2] = 0;
+                return res;
+            } else {
+                long[] tmp = debuff(hd, lHd, ak, times - maxHits);
+                tmp[0] += maxHits;
+                return tmp;
+            }
+        }
+    }
+
+    private long nocure(long lHd, long ak, long times) {
+        long oak = ak;
+        ak -= D * times;
+        if (ak < 0) {
+            long t = (oak - 1) / D;
+            ak = oak - D * t;
+            if (t != 0) {
+                lHd -= (ak + oak - D) * t / 2;
+            }
+            lHd -= ak;
+        } else {
+            lHd -= (ak + oak - D) * times / 2;
+        }
+        return lHd;
     }
 
     private long sdiv(long a, long b) {
@@ -204,6 +298,7 @@ public class CodeJam {
 //          e.printStackTrace();
 //      }
 
+        System.out.println(new Date());
         int T = Integer.parseInt(br.readLine());
         for (int i = 1; i <= T; i++) {
             wr.write("Case #" + i + ": ");
@@ -216,5 +311,6 @@ public class CodeJam {
         wr.close();
         br.close();
         System.out.println("Finished");
+        System.out.println(new Date());
     }
 }
