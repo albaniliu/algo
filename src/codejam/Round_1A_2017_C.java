@@ -1,3 +1,4 @@
+package codejam;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -17,7 +18,7 @@ class TrieNode {
     public TrieNode() {}
 }
 
-public class CodeJam {
+public class Round_1A_2017_C {
 
     private boolean contain(int set, int i) {
         return (set & (1<<i)) > 0;
@@ -320,7 +321,7 @@ public class CodeJam {
         for (int i = 1; i <= T; i++) {
             wr.write("Case #" + i + ": ");
             System.out.print("Case #" + i + ": ");
-            CodeJam jam = new CodeJam();
+            Round_1A_2017_C jam = new Round_1A_2017_C();
             jam.run(br, wr);
             wr.newLine();
             wr.flush();
