@@ -202,17 +202,10 @@ public class CodeJam {
                 if (res[2] < 0) res[2] = 0;
                 return res;
             } else {
-                long turn = times / maxHits;
+                long turn = (times-1) / maxHits;
                 res[0] += turn + 1 + times;
-                
-                if (times - maxHits * turn == 0) {
-                	res[0]--;
-                	long nak = ak - maxHits * (turn-1) * D;
-                	lHd = nocure(hd-nak, nak, maxHits);
-                } else {
-                	long nak = ak - maxHits * turn * D;
-                	lHd = nocure(hd-nak, nak, times - maxHits * turn);
-                }
+                long nak = ak - maxHits * turn * D;
+                lHd = nocure(hd-nak, nak, times - maxHits * turn);
                 ak -= D * times;
                 res[1] = lHd;
                 res[2] = ak;
