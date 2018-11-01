@@ -18,6 +18,14 @@ class TrieNode {
 }
 
 public class CodeJam {
+    public class Node {
+        double arrive;
+        int index;
+        public Node(double a, int i) {
+            this.arrive = a ;
+            this.index = i;
+        }
+    }
 
     private boolean contain(int set, int i) {
         return (set & (1<<i)) > 0;
@@ -63,17 +71,10 @@ public class CodeJam {
     }
     
     int N;
+    int Q;
     int mod = 1_000_000_007;
-    int res = 0;
-    class Node {
-        long cnt;
-        long start;
-        public Node(long c, long s) {
-            this.cnt = c;
-            this.start = s;
-        }
-    }
     long IMPO;
+
     public void run(BufferedReader br, BufferedWriter wr) throws IOException {
 
         IMPO = 1000000000;
@@ -81,84 +82,57 @@ public class CodeJam {
 
         String[] sp = br.readLine().split(" ");
         N = Integer.parseInt(sp[0]);
-        int R = Integer.parseInt(sp[1]);
-        int O = Integer.parseInt(sp[2]);
-        int Y = Integer.parseInt(sp[3]);
-        int G = Integer.parseInt(sp[4]);
-        int B = Integer.parseInt(sp[5]);
-        int V = Integer.parseInt(sp[6]);
-        
-        int[] unicorns = new int[3];
+        Q = Integer.parseInt(sp[1]);
+        long[][] horses = new long[N][2];
+        for (int i = 0; i < N; i++) {
+            sp = br.readLine().split(" ");
+            horses[i][0] = Integer.parseInt(sp[0]);  // max distance
+            horses[i][1] = Integer.parseInt(sp[1]);  // speed
+        }
 
- 
-        unicorns[0] = R - G;
-        unicorns[1] = Y - V;
-        unicorns[2] = B - O;
-        if ( (G > 0 && R <= G) || (V > 0 && Y <= V) || (O > 0 && B <= O)) {
-        	System.out.println("IMPOSSIBLE");
-            wr.write("" + "IMPOSSIBLE");
-            return;
+        long[][] table = new long[N][N];
+        for (int i = 0; i < N; i++) {
+            sp = br.readLine().split(" ");
+            for (int j = 0; j < N; j++) {
+                table[i][j] = Long.parseLong(sp[j]);
+            }
         }
-        StringBuilder sb = new StringBuilder();
-        int index = -1;
-        if (unicorns[0] > unicorns[1]) {
-        	index = 0;
-        } else {
-        	index = 1;
+
+        int[][] query = new int[Q][2];
+        for (int i = 0; i < Q; i++) {
+            sp = br.readLine().split(" ");
+            query[i][0] = Integer.parseInt(sp[0]);  // source
+            query[i][1] = Integer.parseInt(sp[1]);  // dest
         }
-        if (unicorns[2] > unicorns[index]) {
-        	index = 2;
+        long[][] dist = new long[N][N];
+        for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
+            dist[i][j] = IMPO;
+            if (table[i][j] != -1) dist[i][j] = table[i][j];
         }
-        sb.append(index);
-        unicorns[index]--;
-        int firstIndex = index;
-        while ( unicorns[0] > 0 || unicorns[1] > 0 || unicorns[2] > 0) {
-        	if (index == 0) {
-        		if (unicorns[1] > unicorns[2]) {
-        			index = 1;
-        		} else if (unicorns[1] == unicorns[2]) {
-        			index = 2;
-        		}
-        	} else if (index == 1) {
-        		if (unicorns[0] > unicorns[2]) {
-        			index = 0;
-        		} else {
-        			index = 2;
-        		}
-        	} else {
-        		if (unicorns[0] > unicorns[1]) {
-        			index = 0;
-        		} else {
-        			index = 1;
-        		}
-        	}
-        	sb.append(index);
-        	unicorns[index]--;
-        	if (unicorns[index] < 0) {
-        		System.out.println("IMPOSSIBLE");
-                wr.write("" + "IMPOSSIBLE");
-                return;
-        	}
+
+        for (int k = 0; k < N; k++) for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
+            dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);
         }
-        
-        if (sb.charAt(0) == sb.charAt(sb.length() - 1)) {
-        	System.out.println("IMPOSSIBLE");
-            wr.write("" + "IMPOSSIBLE");
-            return;
+        List<Double> ans = new ArrayList<>();
+        for (int q = 0; q<Q; q++) {
+            double[] arrive = new double[N];
+            for (int i = 0; i < N; i++) arrive[i] = IMPO;
+
+            int src = query[q][0];
+            int dest = query[q][1];
+
+            arrive[src] = 0.0;
+            PriorityQueue<Node> pq = new PriorityQueue<>(new Comparator<Node>() {
+                @Override
+                public int compare(Node o1, Node o2) {
+                    return o1.arrive - o2.arrive < 0? -1;
+                }
+            });
+            pq.add(src);
         }
-        for (int i = 0; i < sb.length(); i++) {
-        	if (sb.charAt(i) == '0') {
-        		sb.setCharAt(i, 'R');
-        	} else if (sb.charAt(i) == '1') {
-        		sb.setCharAt(i, 'Y');
-        	} else {
-        		sb.setCharAt(i, 'B');
-        	}
-        }
-        System.out.println(sb.toString());
-        wr.write("" + sb.toString());
-        return;
-        
+
+
+
 //        if (ans == IMPO) {
 //            System.out.println("IMPOSSIBLE");
 //            wr.write("" + "IMPOSSIBLE");
@@ -170,16 +144,16 @@ public class CodeJam {
 
     public static void main(String[] args) throws NumberFormatException, IOException {
         
-//      String fileName = "d://codejam/example.txt";
-//      String outFile = "d://codejam/example-out.txt";
+//      String fileName = "/Users/mobike/IdeaProjects/algo/example.txt";
+//      String outFile = "/Users/mobike/IdeaProjects/algo/example-out.txt";
 //      String fileName = "d://codejam/A-small-practice.in";
 //      String outFile = "d://codejam/A-small-out.txt";
 //      String fileName = "d://codejam/A-large-practice.in";
 //      String outFile = "d://codejam/A-large-out.txt";
-      String fileName = "d://codejam/B-small-practice.in";
-      String outFile = "d://codejam/B-small-out.txt";
-//      String fileName = "d://codejam/B-large-practice.in";
-//      String outFile = "d://codejam/B-large-out.txt";
+//      String fileName = "/Users/mobike/IdeaProjects/algo/B-small-practice.in";
+//      String outFile = "/Users/mobike/IdeaProjects/algo/B-small-out.txt";
+      String fileName = "/Users/mobike/IdeaProjects/algo/B-large-practice.in";
+      String outFile = "/Users/mobike/IdeaProjects/algo/B-large-out.txt";
 //      String fileName = "/Users/mobike/IdeaProjects/algo/C-small-practice.in";
 //      String outFile = "/Users/mobike/IdeaProjects/algo/C-small-out.txt";
 //      String fileName = "d://codejam/C-large-practice.in";
