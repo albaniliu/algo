@@ -63,14 +63,8 @@ public class CodeJam {
     }
     
     int N;
-    int M;
-    int P;
-    int B;
-    int D;
     int mod = 1_000_000_007;
     int res = 0;
-    int[] h;
-    int[] a;
     class Node {
         long cnt;
         long start;
@@ -85,199 +79,94 @@ public class CodeJam {
         IMPO = 1000000000;
         IMPO = IMPO * 1000000000l;
 
-
         String[] sp = br.readLine().split(" ");
-        h = new int[2];
-        a = new int[2];
-        h[0] = Integer.parseInt(sp[0]);
-        a[0] = Integer.parseInt(sp[1]);
-        h[1] = Integer.parseInt(sp[2]);
-        a[1] = Integer.parseInt(sp[3]);
-        B = Integer.parseInt(sp[4]);
-        D = Integer.parseInt(sp[5]);
-        long lHd = h[0];
-        long Ak = a[1];
-        long Ad = a[0];
-        long Hd = h[0];
-        long Hk = h[1];
-        long dbturns = 0;
-        long ans = IMPO;
-        long aturns = sdiv(Hk, Ad);
-        long inc = 0;
-        while (sdiv(Hk, Ad + B) + 1 <= sdiv(Hk, Ad)) {
-            Ad += B;
-            inc++;
-            aturns = sdiv(Hk, Ad) + inc;
-        }
-        ans = nodebuff(aturns, Hd, Hd, Ak);
-
-        if (ans == 1) {
-            System.out.println(ans);
-            wr.write("" + ans);
-            return;
-        }
-        if (Hd <= Ak - D) {
-            System.out.println("IMPOSSIBLE");
-            wr.write("" + "IMPOSSIBLE");
-            return;
-        }
-
-        if (aturns == 2 && Hd > Ak) {
-            System.out.println(aturns);
-            wr.write("" + aturns);
-            return;
-        }
-        if (Hd <= Ak - D + Ak - D - D) {
-            System.out.println("IMPOSSIBLE");
-            wr.write("" + "IMPOSSIBLE");
-            return;
-        }
-
-        long hits = (Hd - 1) / Ak;
-        while (D > 0 && hits < aturns) {
-            hits ++;
-            long maxAk = (Hd - 1) / hits;
-            long debuff = (Ak - maxAk + D - 1) / D;
-            if (debuff == 0) {
-            	long[] pair = debuff(Hd, lHd, Ak, 1);
-            	dbturns += pair[0];
-            	lHd = pair[1];
-            	Ak = pair[2];
-            	if (Ak != 0)
-            	  hits = (Hd - 1) / Ak;
-            } else {
-            	long[] pair = debuff(Hd, lHd, Ak, debuff);
-            	dbturns += pair[0];
-            	lHd = pair[1];
-            	Ak = pair[2];
-            }
-            long nans = dbturns + nodebuff(aturns, Hd, lHd, Ak);
-            if (nans < ans) ans = nans;
-            if (Ak <= 0) break;
-        }
-
-
-//        while (D > 0 && Ak > 0) {
-//            if(lHd <= Ak-D && Hd-Ak <= Ak-D) {
-//                // impossible
-//                break;
-//            }
-//            else if (lHd <= Ak-D) {
-//                // heal
-//                lHd = Hd - Ak;
-//                dbturns++;
-//                continue;
-//            }
-//            else {
-//                long oAk = Ak;
-//                Ak = Ak - D;
-//                if(Ak < 0) Ak = 0;
-//                lHd = lHd - Ak;
-//                dbturns++;
-//                if (Ak > 0 && (Hd + Ak - 1) / Ak == (Hd + oAk - 1) / oAk) continue;
-//            }
-//            long nans = dbturns + nodebuff(aturns, Hd, lHd, Ak);
-//            if (nans < ans) ans = nans;
-//        }
-
+        N = Integer.parseInt(sp[0]);
+        int R = Integer.parseInt(sp[1]);
+        int O = Integer.parseInt(sp[2]);
+        int Y = Integer.parseInt(sp[3]);
+        int G = Integer.parseInt(sp[4]);
+        int B = Integer.parseInt(sp[5]);
+        int V = Integer.parseInt(sp[6]);
         
-        if (ans == IMPO) {
-            System.out.println("IMPOSSIBLE");
+        int[] unicorns = new int[3];
+
+ 
+        unicorns[0] = R - G;
+        unicorns[1] = Y - V;
+        unicorns[2] = B - O;
+        if ( (G > 0 && R <= G) || (V > 0 && Y <= V) || (O > 0 && B <= O)) {
+        	System.out.println("IMPOSSIBLE");
             wr.write("" + "IMPOSSIBLE");
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        int index = -1;
+        if (unicorns[0] > unicorns[1]) {
+        	index = 0;
         } else {
-            System.out.println(ans);
-            wr.write("" + ans);
+        	index = 1;
         }
-    }
-
-    private long[] debuff(long hd, long lHd, long ak, long times) {
-        long[] res = new long[3];
-        if (lHd <= ak - D) {
-            long maxHits = (hd-1) / ak - 1;
-            if (maxHits >= times) {
-                res[0] = times + 1;
-                lHd = nocure(hd-ak, ak, times);
-                res[1] = lHd;
-                res[2] = ak - D * times;
-                if (res[2] < 0) res[2] = 0;
-                return res;
-            } else {
-                long turn = (times-1) / maxHits;
-                res[0] += turn + 1 + times;
-                long nak = ak - maxHits * turn * D;
-                lHd = nocure(hd-nak, nak, times - maxHits * turn);
-                ak -= D * times;
-                res[1] = lHd;
-                res[2] = ak;
-                if (res[2] < 0) res[2] = 0;
-                return res;
-            }
+        if (unicorns[2] > unicorns[index]) {
+        	index = 2;
         }
-        if (ak <= D) {
-            res[0] = times;
-            res[1] = lHd;
-            res[2] = 0;
-            return res;
+        sb.append(index);
+        unicorns[index]--;
+        int firstIndex = index;
+        while ( unicorns[0] > 0 || unicorns[1] > 0 || unicorns[2] > 0) {
+        	if (index == 0) {
+        		if (unicorns[1] > unicorns[2]) {
+        			index = 1;
+        		} else if (unicorns[1] == unicorns[2]) {
+        			index = 2;
+        		}
+        	} else if (index == 1) {
+        		if (unicorns[0] > unicorns[2]) {
+        			index = 0;
+        		} else {
+        			index = 2;
+        		}
+        	} else {
+        		if (unicorns[0] > unicorns[1]) {
+        			index = 0;
+        		} else {
+        			index = 1;
+        		}
+        	}
+        	sb.append(index);
+        	unicorns[index]--;
+        	if (unicorns[index] < 0) {
+        		System.out.println("IMPOSSIBLE");
+                wr.write("" + "IMPOSSIBLE");
+                return;
+        	}
         }
-
-        long maxHits = (lHd - 1) / (ak - D);
-        if (maxHits >= times) {
-            res[0] = times;
-            lHd = nocure(lHd, ak, times);
-            res[1] = lHd;
-            res[2] = ak - D * times;
-            if (res[2] < 0) res[2] = 0;
-            return res;
-        } else {
-            lHd = nocure(lHd, ak, maxHits);
-            res[0] += maxHits;
-            ak -= D * maxHits;
-            if (ak <= 0) {
-                res[0] = times;
-                res[1] = lHd;
-                res[2] = 0;
-                return res;
-            } else {
-                long[] tmp = debuff(hd, lHd, ak, times - maxHits);
-                tmp[0] += maxHits;
-                return tmp;
-            }
+        
+        if (sb.charAt(0) == sb.charAt(sb.length() - 1)) {
+        	System.out.println("IMPOSSIBLE");
+            wr.write("" + "IMPOSSIBLE");
+            return;
         }
-    }
-
-    private long nocure(long lHd, long ak, long times) {
-        long oak = ak;
-        ak -= D * times;
-        if (ak < 0) {
-            long t = (oak - 1) / D;
-            ak = oak - D * t;
-            if (t != 0) {
-                lHd -= (ak + oak - D) * t / 2;
-            }
-            lHd -= ak;
-        } else {
-            lHd -= (ak + oak - D) * times / 2;
+        for (int i = 0; i < sb.length(); i++) {
+        	if (sb.charAt(i) == '0') {
+        		sb.setCharAt(i, 'R');
+        	} else if (sb.charAt(i) == '1') {
+        		sb.setCharAt(i, 'Y');
+        	} else {
+        		sb.setCharAt(i, 'B');
+        	}
         }
-        return lHd;
+        System.out.println(sb.toString());
+        wr.write("" + sb.toString());
+        return;
+        
+//        if (ans == IMPO) {
+//            System.out.println("IMPOSSIBLE");
+//            wr.write("" + "IMPOSSIBLE");
+//        } else {
+//            System.out.println(ans);
+//            wr.write("" + ans);
+//        }
     }
-
-    private long sdiv(long a, long b) {
-        return (a + b - 1) / b;
-    }
-
-    private long nodebuff(long aturns, long hd, long lHd, long ak) {
-        if (lHd > ak * (aturns - 1)) return aturns;
-        if (aturns == 1) return aturns;
-        long maxHit = sdiv(lHd, ak) - 1;
-        long oturns = aturns;
-        aturns -= maxHit;
-        hd -= ak;
-        if (hd <= 0) return IMPO;
-        long de = sdiv(hd, ak);
-        if (de == 1) return IMPO;
-        return oturns + 1 + (aturns - 2) / (de - 1);
-    }
-
 
     public static void main(String[] args) throws NumberFormatException, IOException {
         
@@ -287,14 +176,14 @@ public class CodeJam {
 //      String outFile = "d://codejam/A-small-out.txt";
 //      String fileName = "d://codejam/A-large-practice.in";
 //      String outFile = "d://codejam/A-large-out.txt";
-//      String fileName = "d://codejam/B-small-practice.in";
-//      String outFile = "d://codejam/B-small-out.txt";
+      String fileName = "d://codejam/B-small-practice.in";
+      String outFile = "d://codejam/B-small-out.txt";
 //      String fileName = "d://codejam/B-large-practice.in";
 //      String outFile = "d://codejam/B-large-out.txt";
 //      String fileName = "/Users/mobike/IdeaProjects/algo/C-small-practice.in";
 //      String outFile = "/Users/mobike/IdeaProjects/algo/C-small-out.txt";
-      String fileName = "d://codejam/C-large-practice.in";
-      String outFile = "d://codejam/C-large-out.txt";
+//      String fileName = "d://codejam/C-large-practice.in";
+//      String outFile = "d://codejam/C-large-out.txt";
 //      String fileName = "d://codejam/D-small-practice.in";
 //      String outFile = "d://codejam/D-small-out.txt";
 //      String fileName = "d://codejam/D-large-practice.in";
