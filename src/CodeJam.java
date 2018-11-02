@@ -71,7 +71,7 @@ public class CodeJam {
     }
     
     int N;
-    int Q;
+    int K;
     int mod = 1_000_000_007;
     long IMPO;
 
@@ -80,82 +80,76 @@ public class CodeJam {
         IMPO = 1000000000;
         IMPO = IMPO * 1000000000l;
 
+        double pi = Math.PI;
         String[] sp = br.readLine().split(" ");
         N = Integer.parseInt(sp[0]);
-        Q = Integer.parseInt(sp[1]);
-        long[][] horses = new long[N][2];
-        for (int i = 0; i < N; i++) {
-            sp = br.readLine().split(" ");
-            horses[i][0] = Integer.parseInt(sp[0]);  // max distance
-            horses[i][1] = Integer.parseInt(sp[1]);  // speed
+        K = Integer.parseInt(sp[1]);
+        int[][] cakes = new int[N][2];
+        for (int i  = 0; i < N; i++) {
+        	sp = br.readLine().split(" ");
+        	cakes[i][0] = Integer.parseInt(sp[0]);   // R
+        	cakes[i][1] = Integer.parseInt(sp[1]);   // H
         }
+        Arrays.sort(cakes, new Comparator<int[]>() {
 
-        long[][] table = new long[N][N];
-        for (int i = 0; i < N; i++) {
-            sp = br.readLine().split(" ");
-            for (int j = 0; j < N; j++) {
-                table[i][j] = Long.parseLong(sp[j]);
-            }
+			@Override
+			public int compare(int[] a, int[] b) {
+				// TODO Auto-generated method stub
+				return a[0] - b[0];
+			}
+        	
+        });
+        double ans = 0;
+        PriorityQueue<Integer> pq = new PriorityQueue<>(new Comparator<Integer>() {
+
+			@Override
+			public int compare(Integer a, Integer b) {
+				return 2 * cakes[a][0] * pi * cakes[a][1] < 2 * cakes[b][0] * pi * cakes[b][1]?-1:1;
+			}
+        	
+        });
+        double sum = 0;
+        for (int i = 0; i < K-1; i++) {
+        	pq.add(i);
+        	sum += 2 * cakes[i][0] * pi * cakes[i][1];
         }
-
-        int[][] query = new int[Q][2];
-        for (int i = 0; i < Q; i++) {
-            sp = br.readLine().split(" ");
-            query[i][0] = Integer.parseInt(sp[0]);  // source
-            query[i][1] = Integer.parseInt(sp[1]);  // dest
+        for (int i = K-1; i < N; i++) {
+        	double tmp = cakes[i][0] * cakes[i][0] * pi + 2 * cakes[i][0] * pi * cakes[i][1];
+        	ans = Math.max(ans, tmp + sum);
+        	if (K == 1) continue;
+        	int min = pq.poll();
+        	if (2 * cakes[i][0] * pi * cakes[i][1] < 2 * cakes[min][0] * pi * cakes[min][1]) {
+        		pq.add(min);
+        	} else {
+        		pq.add(i);
+        		sum -= 2 * cakes[min][0] * pi * cakes[min][1];
+        		sum += 2 * cakes[i][0] * pi * cakes[i][1];
+        	}
         }
-        long[][] dist = new long[N][N];
-        for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
-            dist[i][j] = IMPO;
-            if (table[i][j] != -1) dist[i][j] = table[i][j];
-        }
-
-        for (int k = 0; k < N; k++) for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
-            dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);
-        }
-        List<Double> ans = new ArrayList<>();
-        for (int q = 0; q<Q; q++) {
-            double[] arrive = new double[N];
-            for (int i = 0; i < N; i++) arrive[i] = IMPO;
-
-            int src = query[q][0];
-            int dest = query[q][1];
-
-            arrive[src] = 0.0;
-            PriorityQueue<Node> pq = new PriorityQueue<>(new Comparator<Node>() {
-                @Override
-                public int compare(Node o1, Node o2) {
-                    return o1.arrive - o2.arrive < 0? -1;
-                }
-            });
-            pq.add(src);
-        }
-
-
 
 //        if (ans == IMPO) {
 //            System.out.println("IMPOSSIBLE");
 //            wr.write("" + "IMPOSSIBLE");
 //        } else {
-//            System.out.println(ans);
-//            wr.write("" + ans);
+            System.out.println(ans);
+            wr.write("" + ans);
 //        }
     }
 
     public static void main(String[] args) throws NumberFormatException, IOException {
         
-//      String fileName = "/Users/mobike/IdeaProjects/algo/example.txt";
-//      String outFile = "/Users/mobike/IdeaProjects/algo/example-out.txt";
-//      String fileName = "d://codejam/A-small-practice.in";
-//      String outFile = "d://codejam/A-small-out.txt";
+//      String fileName = "d://codejam/example.txt";
+//      String outFile = "d://codejam/example-out.txt";
+      String fileName = "d://codejam/A-small-practice.in";
+      String outFile = "d://codejam/A-small-out.txt";
 //      String fileName = "d://codejam/A-large-practice.in";
 //      String outFile = "d://codejam/A-large-out.txt";
 //      String fileName = "/Users/mobike/IdeaProjects/algo/B-small-practice.in";
 //      String outFile = "/Users/mobike/IdeaProjects/algo/B-small-out.txt";
-      String fileName = "/Users/mobike/IdeaProjects/algo/B-large-practice.in";
-      String outFile = "/Users/mobike/IdeaProjects/algo/B-large-out.txt";
-//      String fileName = "/Users/mobike/IdeaProjects/algo/C-small-practice.in";
-//      String outFile = "/Users/mobike/IdeaProjects/algo/C-small-out.txt";
+//      String fileName = "/Users/mobike/IdeaProjects/algo/B-large-practice.in";
+//      String outFile = "/Users/mobike/IdeaProjects/algo/B-large-out.txt";
+//      String fileName = "d://codejam/C-small-practice.in";
+//      String outFile = "d://codejam/C-small-out.txt";
 //      String fileName = "d://codejam/C-large-practice.in";
 //      String outFile = "d://codejam/C-large-out.txt";
 //      String fileName = "d://codejam/D-small-practice.in";
