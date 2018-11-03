@@ -1,45 +1,14 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-class TrieNode {
-    List<String> words = new ArrayList<>();
-    TrieNode[] children = new TrieNode[2];
-    int cost = Integer.MAX_VALUE / 2;
-    public TrieNode() {}
-}
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
 
 public class CodeJam {
-    public class Node {
-        double arrive;
-        int index;
-        public Node(double a, int i) {
-            this.arrive = a ;
-            this.index = i;
-        }
-    }
-
     private boolean contain(int set, int i) {
         return (set & (1<<i)) > 0;
-    }
-
-    private static void addNode(TrieNode root, String w) {
-        TrieNode cur = root;
-        for (int i = 0; i < w.length(); i++ ) {
-            int index = w.charAt(i) - '0';
-            if (cur.children[index] == null) cur.children[index] = new TrieNode();
-            cur = cur.children[index];
-        }
-        cur.words.add(w);
     }
 
     private static int gcd(int a, int b) {
@@ -70,11 +39,21 @@ public class CodeJam {
         p[i] = p[j];
         p[j] = tmp;
     }
-    
+    private static int countOne(int a) {
+        if (a == 0) return 0;
+        return countOne(a & (a-1)) + 1;
+    }
+
+    private static int sdiv(int a, int b) {
+        return (a +b -1) / b;
+    }
+
     int N;
-    int K;
+    int C;
+    int M;
     int mod = 1_000_000_007;
     long IMPO;
+
 
     public void run(BufferedReader br, PrintWriter out) throws IOException {
 
@@ -83,61 +62,68 @@ public class CodeJam {
 
         String[] sp = br.readLine().split(" ");
         N = Integer.parseInt(sp[0]);
-        K = Integer.parseInt(sp[1]);
-        sp = br.readLine().split(" ");
-        double U = Double.parseDouble(sp[0]);
-        double[] p = new double[N];
-        sp = br.readLine().split(" ");
-        PriorityQueue<Double> pq = new PriorityQueue<>(new Comparator<Double>() {
-
-			@Override
-			public int compare(Double a, Double b) {
-				return b < a?-1:1;
-			}
-        	
+        C = Integer.parseInt(sp[1]);
+        M = Integer.parseInt(sp[2]);
+        int[][] ticket = new int[M][2];
+        for (int i = 0; i < M; i++) {
+            sp = br.readLine().split(" ");
+            ticket[i][0] = Integer.parseInt(sp[0]) - 1;
+            ticket[i][1] = Integer.parseInt(sp[1]) - 1;
+        }
+        Arrays.sort(ticket, new Comparator<int[]>() {
+            @Override
+            public int compare(int[] a, int[] b) {
+                if (a[0] == b[0]) {
+                    return a[1] - b[1];
+                }
+                return  a[0] - b[0];
+            }
         });
-        double sum = U;
-        for (int i = 0; i < N; i++) {
-        	p[i] = Double.parseDouble(sp[i]);
-        	sum += p[i];
-        	pq.add(p[i]);
-        }
-        double ans = 1.0;
-        while (!pq.isEmpty()) {
-        	double tmp = pq.poll();
-        	double avg = sum / (pq.size() + 1);
-        	if (tmp > avg) {
-        		ans *= tmp;
-        		sum -= tmp;
-        	} else {
-        		ans *= Math.pow(avg, pq.size() + 1);
-        		break;
-        	}
-        }
 
+        int[] person = new int[C];
+        int[] position = new int[N];
+        int ans = 0;
+        for (int i = 0; i < M; i++) {
+            person[ticket[i][1]]++;
+            ans = Math.max(ans, person[ticket[i][1]]);
+            position[ticket[i][0]]++;
+        }
+        int sum = 0;
+        for (int i= 0; i < N; i++) {
+            sum += position[i];
+            ans = Math.max(ans, sdiv(sum, i+1));
+        }
+        int promote = 0;
+        int[] count = new int[N];
+        for (int i = 0; i < M; i++) {
+            count[ticket[i][0]]++;
+        }
+        for (int i = 0; i < N; i++) {
+            if (count[i] > ans) promote += count[i] - ans;
+        }
 //        if (ans == IMPO) {
 //            System.out.println("IMPOSSIBLE");
 //            out.println("IMPOSSIBLE");
 //        } else {
-            System.out.println(ans);
-            out.println(ans);
+            System.out.println(ans + " " + promote);
+            out.println(ans + " " + promote);
 //        }
     }
 
     public static void main(String[] args) throws NumberFormatException, IOException {
         
-//      String fileName = "d://codejam/example.txt";
-//      String outFile = "d://codejam/example-out.txt";
-//      String fileName = "d://codejam/A-small-practice.in";
-//      String outFile = "d://codejam/A-small-out.txt";
-//      String fileName = "d://codejam/A-large-practice.in";
-//      String outFile = "d://codejam/A-large-out.txt";
-//      String fileName = "/Users/mobike/IdeaProjects/algo/B-small-practice.in";
-//      String outFile = "/Users/mobike/IdeaProjects/algo/B-small-out.txt";
-//      String fileName = "/Users/mobike/IdeaProjects/algo/B-large-practice.in";
-//      String outFile = "/Users/mobike/IdeaProjects/algo/B-large-out.txt";
-      String fileName = "d://codejam/C-small-practice-1.in";
-      String outFile = "d://codejam/C-small-out.txt";
+//      String fileName = "C://Users/user/eclipse-workspace/algo/example.txt";
+//      String outFile = "C://Users/user/eclipse-workspace/algo/example-out.txt";
+//      String fileName = "C://Users/user/eclipse-workspace/algo/A-small-practice.in";
+//      String outFile = "C://Users/user/eclipse-workspace/algo/A-small-out.txt";
+//      String fileName = "C://Users/user/eclipse-workspace/algo/A-large-practice.in";
+//      String outFile = "C://Users/user/eclipse-workspace/algo/A-large-out.txt";
+//      String fileName = "C://Users/user/eclipse-workspace/algo/B-small-practice.in";
+//      String outFile = "C://Users/user/eclipse-workspace/algo/B-small-out.txt";
+      String fileName = "C://Users/user/eclipse-workspace/algo/B-large-practice.in";
+      String outFile = "C://Users/user/eclipse-workspace/algo/B-large-out.txt";
+//      String fileName = "C://Users/user/eclipse-workspace/algo/C-small-practice-2.in";
+//      String outFile = "C://Users/user/eclipse-workspace/algo/C-small-out.txt";
 //      String fileName = "d://codejam/C-large-practice.in";
 //      String outFile = "d://codejam/C-large-out.txt";
 //      String fileName = "d://codejam/D-small-practice.in";
