@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -75,64 +76,51 @@ public class CodeJam {
     int mod = 1_000_000_007;
     long IMPO;
 
-    public void run(BufferedReader br, BufferedWriter wr) throws IOException {
+    public void run(BufferedReader br, PrintWriter out) throws IOException {
 
         IMPO = 1000000000;
         IMPO = IMPO * 1000000000l;
 
-        double pi = Math.PI;
         String[] sp = br.readLine().split(" ");
         N = Integer.parseInt(sp[0]);
         K = Integer.parseInt(sp[1]);
-        int[][] cakes = new int[N][2];
-        for (int i  = 0; i < N; i++) {
-        	sp = br.readLine().split(" ");
-        	cakes[i][0] = Integer.parseInt(sp[0]);   // R
-        	cakes[i][1] = Integer.parseInt(sp[1]);   // H
-        }
-        Arrays.sort(cakes, new Comparator<int[]>() {
+        sp = br.readLine().split(" ");
+        double U = Double.parseDouble(sp[0]);
+        double[] p = new double[N];
+        sp = br.readLine().split(" ");
+        PriorityQueue<Double> pq = new PriorityQueue<>(new Comparator<Double>() {
 
 			@Override
-			public int compare(int[] a, int[] b) {
-				// TODO Auto-generated method stub
-				return a[0] - b[0];
+			public int compare(Double a, Double b) {
+				return b < a?-1:1;
 			}
         	
         });
-        double ans = 0;
-        PriorityQueue<Integer> pq = new PriorityQueue<>(new Comparator<Integer>() {
-
-			@Override
-			public int compare(Integer a, Integer b) {
-				return 2 * cakes[a][0] * pi * cakes[a][1] < 2 * cakes[b][0] * pi * cakes[b][1]?-1:1;
-			}
-        	
-        });
-        double sum = 0;
-        for (int i = 0; i < K-1; i++) {
-        	pq.add(i);
-        	sum += 2 * cakes[i][0] * pi * cakes[i][1];
+        double sum = U;
+        for (int i = 0; i < N; i++) {
+        	p[i] = Double.parseDouble(sp[i]);
+        	sum += p[i];
+        	pq.add(p[i]);
         }
-        for (int i = K-1; i < N; i++) {
-        	double tmp = cakes[i][0] * cakes[i][0] * pi + 2 * cakes[i][0] * pi * cakes[i][1];
-        	ans = Math.max(ans, tmp + sum);
-        	if (K == 1) continue;
-        	int min = pq.poll();
-        	if (2 * cakes[i][0] * pi * cakes[i][1] < 2 * cakes[min][0] * pi * cakes[min][1]) {
-        		pq.add(min);
+        double ans = 1.0;
+        while (!pq.isEmpty()) {
+        	double tmp = pq.poll();
+        	double avg = sum / (pq.size() + 1);
+        	if (tmp > avg) {
+        		ans *= tmp;
+        		sum -= tmp;
         	} else {
-        		pq.add(i);
-        		sum -= 2 * cakes[min][0] * pi * cakes[min][1];
-        		sum += 2 * cakes[i][0] * pi * cakes[i][1];
+        		ans *= Math.pow(avg, pq.size() + 1);
+        		break;
         	}
         }
 
 //        if (ans == IMPO) {
 //            System.out.println("IMPOSSIBLE");
-//            wr.write("" + "IMPOSSIBLE");
+//            out.println("IMPOSSIBLE");
 //        } else {
             System.out.println(ans);
-            wr.write("" + ans);
+            out.println(ans);
 //        }
     }
 
@@ -140,16 +128,16 @@ public class CodeJam {
         
 //      String fileName = "d://codejam/example.txt";
 //      String outFile = "d://codejam/example-out.txt";
-      String fileName = "d://codejam/A-small-practice.in";
-      String outFile = "d://codejam/A-small-out.txt";
+//      String fileName = "d://codejam/A-small-practice.in";
+//      String outFile = "d://codejam/A-small-out.txt";
 //      String fileName = "d://codejam/A-large-practice.in";
 //      String outFile = "d://codejam/A-large-out.txt";
 //      String fileName = "/Users/mobike/IdeaProjects/algo/B-small-practice.in";
 //      String outFile = "/Users/mobike/IdeaProjects/algo/B-small-out.txt";
 //      String fileName = "/Users/mobike/IdeaProjects/algo/B-large-practice.in";
 //      String outFile = "/Users/mobike/IdeaProjects/algo/B-large-out.txt";
-//      String fileName = "d://codejam/C-small-practice.in";
-//      String outFile = "d://codejam/C-small-out.txt";
+      String fileName = "d://codejam/C-small-practice-1.in";
+      String outFile = "d://codejam/C-small-out.txt";
 //      String fileName = "d://codejam/C-large-practice.in";
 //      String outFile = "d://codejam/C-large-out.txt";
 //      String fileName = "d://codejam/D-small-practice.in";
@@ -158,24 +146,18 @@ public class CodeJam {
 //      String outFile = "d://codejam/D-large-out.txt";
       
       BufferedReader br = new BufferedReader(new FileReader(fileName));
-      BufferedWriter wr = new BufferedWriter(new FileWriter(outFile));
-//      try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
-//          lines = stream.collect(Collectors.toList());
-//      } catch (IOException e) {
-//          e.printStackTrace();
-//      }
+      PrintWriter out = new PrintWriter(outFile);
 
         System.out.println(new Date());
         int T = Integer.parseInt(br.readLine());
         for (int i = 1; i <= T; i++) {
-            wr.write("Case #" + i + ": ");
+        	out.print("Case #" + i + ": ");
             System.out.print("Case #" + i + ": ");
             CodeJam jam = new CodeJam();
-            jam.run(br, wr);
-            wr.newLine();
-            wr.flush();
+            jam.run(br, out);
+            out.flush();
         }
-        wr.close();
+        out.close();
         br.close();
         System.out.println("Finished");
         System.out.println(new Date());
