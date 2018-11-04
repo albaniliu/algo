@@ -74,80 +74,165 @@ class Node {
 }
 
 public class Solution {
-    
-    public int[] threeEqualParts(int[] A) {
-        int n = A.length;
-        int[] next = new int[n];
-        for (int i = 0; i < n; i++) next[i] = -1;
-        next[n-1] = n;
-        for (int i = n-2; i >= 0; i--) {
-            if (A[i] != A[i+1]) {
-                next[n-2] = n-2 - (i);
-                break;
-            }
+
+    List<List<Integer>> pre = new ArrayList<>();
+    List<List<Integer>> after = new ArrayList<>();
+    int[][] dp;
+    int n;
+
+    public int[] movesToStamp(String stamp, String target) {
+
+        for (int i = 0; i < target.length(); i++) {
+            pre.add(new ArrayList<>());
+            after.add(new ArrayList<>());
         }
-        if (next[n-2] == -1) next[n-2] = n - 1;
-        
-        for (int i = n - 3; i >= 0; i--) {
-            int tmp = n - 1;
-            int len = 0;
-            if (next[i+1] > 1) {
-                len = Math.min(next[i+1] - 1, next[n-2]);
-            }
-            tmp = n - len - 1;
-            for (int j = i-len; j>=0; j--,tmp--) {
-                if (A[j] != A[tmp]) {
-                    next[i] = n-1 - tmp;
-                    break;
-                }
-            }
-            if (next[i] == -1) next[i] = i+1;
-        }
-        
-        int[] leftZero = new int[n];
-        if (A[0] == 0) leftZero[0] = 1;
-        for (int i = 1; i < n; i++) {
-            if (A[i] == 0) {
-                leftZero[i] = leftZero[i-1] + 1;
-            }
-        }
-        
-        int first = 0;
-        for (int i = 0; i< n; i++  ) {
-            if (A[i] == 1) {
-                first = i;
-                break;
-            }
-        }
-        int l = first;
-        int r = n - 2;
-        while (l < r) {
-            int len = l - first + 1;
-            if (next[l] >= len) {
-                if (r >= n - len) {
-                    r = n - len - 1;
-                }
-                while (r > l && next[r] < len) r --;
-                if (r - l >= len && leftZero[r - len] >= r - len - l && leftZero[n-len-1] >= n - len - 1 -r) {
-                    return new int[] {l ,  r+1};
-                } else {
-                    l++;
-                }
+        n = target.length();
+        for (int i = 0; i < target.length(); i++) {
+            if (i == 0) {
+                pre.get(i).add(0);
             } else {
-                l ++;
+                List<Integer> p = pre.get(i-1);
+                for (int s: p) {
+                    int place = i - 1 - s;
+                    if (place >= 0 && place < stamp.length() && target.charAt(i-1) == stamp.charAt(place)) {
+                        pre.get(i).add(s);
+                    }
+                }
+                if (n - i >= stamp.length())
+                    pre.get(i).add(i);
             }
         }
-        return new int[] {-1,-1};
+        for (int i = n-1; i >= 0; i--) {
+            if (i == n-1) {
+                after.get(i).add(n-1);
+            } else {
+                List<Integer> p = after.get(i+1);
+                for (int e: p) {
+                    int place = stamp.length() - 1 - (e - i - 1);
+                    if (place >= 0 && place < stamp.length() && target.charAt(i+1) == stamp.charAt(place)) {
+                        after.get(i).add(e);
+                    }
+                }
+                if (i >= stamp.length() - 1)
+                    after.get(i).add(i);
+            }
+        }
+
+        dp = new int[n][n];
+        for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) dp[i][j] = -1;
+        for (int i = 0; i < n - stamp.length() + 1; i++) for (int j = i; j < n; j++) {
+            if (j - i + 1 > stamp.length()) break;
+            String tmp = target.substring(i,j);
+            int index = stamp.indexOf(tmp);
+            if (index != -1 && index <= i) {
+                dp[i][j] = i - index;
+            }
+        }
+        List<Integer> ans = new ArrayList<>();
+        boolean[][] visited = new boolean[n][n];
+        HashMap<Integer, List<Integer>> cache = new HashMap<>();
+        ans = solve(0, target.length()-1, stamp, target, cache);
+        int[] res = new int[ans.size()];
+        Collections.reverse(ans);
+        for (int j = 0; j < ans.size(); j++) res[j] = ans.get(j);
+        System.out.println(ans);
+        return res;
     }
 
-    
-	public static void main(String[] args) throws IOException, InterruptedException {
+    private List<Integer> solve(int s, int e, String stamp, String target, HashMap<Integer, List<Integer>> cache) {
+        if (cache.containsKey(s * n + e)) {
+            return cache.get(s * n + e);
+        }
+
+        List<Integer> res = new ArrayList<>();
+        if (e < target.length() - 1) {
+            for (int ns : pre.get(e + 1)) {
+                if (ns == e+1) continue;
+                int tmp = ns;
+                if (s <= ns - 1) {
+                    List<Integer> tres = solve(s, ns - 1, stamp, target, cache);
+                    if (tres.size() > 0) {
+                        res.add(ns);
+                        res.addAll(tres);
+                        cache.put(s * n + e, res);
+                        return res;
+                    }
+                } else {
+                    res.add(ns);
+                    cache.put(s * n + e, res);
+                    return res;
+                }
+            }
+        }
+        if (s > 0) {
+            for (int ne : after.get(s-1)) {
+                if (ne == s-1) continue;
+                int tmp = ne - stamp.length() + 1;
+
+                if (ne+1 <= e) {
+                    List<Integer> tres = solve(ne +1, e, stamp, target, cache);
+                    if (tres.size() > 0) {
+                        res.add(tmp);
+                        res.addAll(tres);
+                        cache.put(s * n + e, res);
+                        return res;
+                    }
+                } else {
+                    res.add(tmp);
+                    cache.put(s * n + e, res);
+                    return res;
+                }
+            }
+        }
+        if (e - s + 1 < stamp.length()) {
+            if (dp[s][e] == -1) return res;
+            else {
+                res.add(dp[s][e]);
+                cache.put(s * n + e, res);
+                return res;
+            }
+        }
+        for (int i = s; i+stamp.length() <= e+1; i++) {
+            int index = target.indexOf(stamp, i);
+            if (index == -1) break;
+            i = index;
+            if (index + stamp.length() <= e+1) {
+                res.add(index);
+                if (index + stamp.length() <= e) {
+                    List<Integer> tres = solve(index+stamp.length(), e, stamp, target, cache);
+                    if (tres.size() == 0) {
+                        res.clear();
+                        continue;
+                    } else {
+                        res.addAll(tres);
+                    }
+                }
+                if (s <= index-1) {
+                    List<Integer> tres = solve(s, index - 1, stamp, target, cache);
+                    if (tres.size() == 0) {
+                        res.clear();
+                        continue;
+                    } else {
+                        res.addAll(tres);
+                    }
+                }
+                cache.put(s * n + e, res);
+                return res;
+            }
+        }
+        res.clear();
+        return res;
+    }
+
+
+    public static void main(String[] args) throws IOException, InterruptedException {
 		System.out.println("[[1,1,0,0],[1,1,0,1],[0,0,1,0],[0,1,0,1]]".replace("[", "{").replace("]", "}"));
 		Solution s = new Solution();
-		int[] A = new int [] {1,0,1,1,1,1,0,1,1,1,1,0,1,1,1};
+		int[] A = new int[] {0,0,0,0,0,0};
 		int[] B = new int[] {327716,69772,667805,856849,78755,606982,696937,207697,275337,290550};
 		int[][] hits = new int[][] {{5,1},{1,3}};
 		int[][] grid = new int[][] {{1,1,0,0},{1,1,0,1},{0,0,1,0},{0,1,0,1}};
+		String[] emails = new String[] {"test.email+alex@leetcode.com","test.e.mail+bob.cathy@leetcode.com","testemail+david@lee.tcode.com"};
 		
 		TreeSet<long[]> sumSet = new TreeSet<>(new Comparator<long[]>() {
 
@@ -166,7 +251,7 @@ public class Solution {
 		Semaphore semaphore = new Semaphore(5);
 		semaphore.tryAcquire(10, TimeUnit.MILLISECONDS);
 		semaphore.release();
-		System.out.println(s.threeEqualParts(A)[1]);
+		System.out.println(s.movesToStamp("zbs", "zbzbsbszbssbzbszbsss"));
 	}
 
 }
