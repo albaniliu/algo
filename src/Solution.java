@@ -81,57 +81,19 @@ public class Solution {
     int n;
 
     public int[] movesToStamp(String stamp, String target) {
-
-        for (int i = 0; i < target.length(); i++) {
-            pre.add(new ArrayList<>());
-            after.add(new ArrayList<>());
-        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(target);
         n = target.length();
-        for (int i = 0; i < target.length(); i++) {
-            if (i == 0) {
-                pre.get(i).add(0);
-            } else {
-                List<Integer> p = pre.get(i-1);
-                for (int s: p) {
-                    int place = i - 1 - s;
-                    if (place >= 0 && place < stamp.length() && target.charAt(i-1) == stamp.charAt(place)) {
-                        pre.get(i).add(s);
-                    }
-                }
-                if (n - i >= stamp.length())
-                    pre.get(i).add(i);
-            }
-        }
-        for (int i = n-1; i >= 0; i--) {
-            if (i == n-1) {
-                after.get(i).add(n-1);
-            } else {
-                List<Integer> p = after.get(i+1);
-                for (int e: p) {
-                    int place = stamp.length() - 1 - (e - i - 1);
-                    if (place >= 0 && place < stamp.length() && target.charAt(i+1) == stamp.charAt(place)) {
-                        after.get(i).add(e);
-                    }
-                }
-                if (i >= stamp.length() - 1)
-                    after.get(i).add(i);
-            }
-        }
-
-        dp = new int[n][n];
-        for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) dp[i][j] = -1;
-        for (int i = 0; i < n - stamp.length() + 1; i++) for (int j = i; j < n; j++) {
-            if (j - i + 1 > stamp.length()) break;
-            String tmp = target.substring(i,j);
-            int index = stamp.indexOf(tmp);
-            if (index != -1 && index <= i) {
-                dp[i][j] = i - index;
-            }
+        StringBuilder t = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            t.append('*');
         }
         List<Integer> ans = new ArrayList<>();
-        boolean[][] visited = new boolean[n][n];
-        HashMap<Integer, List<Integer>> cache = new HashMap<>();
-        ans = solve(0, target.length()-1, stamp, target, cache);
+        while (!sb.toString().equals(t.toString())) {
+            int index = replace(sb, stamp);
+            if (index == -1) return new int[0];
+            ans.add(index);
+        }
         int[] res = new int[ans.size()];
         Collections.reverse(ans);
         for (int j = 0; j < ans.size(); j++) res[j] = ans.get(j);
@@ -139,89 +101,23 @@ public class Solution {
         return res;
     }
 
-    private List<Integer> solve(int s, int e, String stamp, String target, HashMap<Integer, List<Integer>> cache) {
-        if (cache.containsKey(s * n + e)) {
-            return cache.get(s * n + e);
-        }
-
-        List<Integer> res = new ArrayList<>();
-        if (e < target.length() - 1) {
-            for (int ns : pre.get(e + 1)) {
-                if (ns == e+1) continue;
-                int tmp = ns;
-                if (s <= ns - 1) {
-                    List<Integer> tres = solve(s, ns - 1, stamp, target, cache);
-                    if (tres.size() > 0) {
-                        res.add(ns);
-                        res.addAll(tres);
-                        cache.put(s * n + e, res);
-                        return res;
-                    }
-                } else {
-                    res.add(ns);
-                    cache.put(s * n + e, res);
-                    return res;
+    private int replace(StringBuilder sb, String stamp) {
+        for (int i = 0; i <= sb.length() - stamp.length(); i++) {
+            boolean ok = true;
+            int cntStart = 0;
+            for (int j = 0; j < stamp.length(); j++) {
+                if (sb.charAt(i+j) == '*') cntStart ++;
+                if (sb.charAt(i+j) != stamp.charAt(j) && sb.charAt(i+j) != '*') {
+                    ok = false;
+                    break;
                 }
             }
-        }
-        if (s > 0) {
-            for (int ne : after.get(s-1)) {
-                if (ne == s-1) continue;
-                int tmp = ne - stamp.length() + 1;
-
-                if (ne+1 <= e) {
-                    List<Integer> tres = solve(ne +1, e, stamp, target, cache);
-                    if (tres.size() > 0) {
-                        res.add(tmp);
-                        res.addAll(tres);
-                        cache.put(s * n + e, res);
-                        return res;
-                    }
-                } else {
-                    res.add(tmp);
-                    cache.put(s * n + e, res);
-                    return res;
-                }
+            if (ok && cntStart < stamp.length()) {
+                for (int j = 0; j < stamp.length(); j++) sb.setCharAt(i+j, '*');
+                return i;
             }
         }
-        if (e - s + 1 < stamp.length()) {
-            if (dp[s][e] == -1) return res;
-            else {
-                res.add(dp[s][e]);
-                cache.put(s * n + e, res);
-                return res;
-            }
-        }
-        for (int i = s; i+stamp.length() <= e+1; i++) {
-            int index = target.indexOf(stamp, i);
-            if (index == -1) break;
-            i = index;
-            if (index + stamp.length() <= e+1) {
-                res.add(index);
-                if (index + stamp.length() <= e) {
-                    List<Integer> tres = solve(index+stamp.length(), e, stamp, target, cache);
-                    if (tres.size() == 0) {
-                        res.clear();
-                        continue;
-                    } else {
-                        res.addAll(tres);
-                    }
-                }
-                if (s <= index-1) {
-                    List<Integer> tres = solve(s, index - 1, stamp, target, cache);
-                    if (tres.size() == 0) {
-                        res.clear();
-                        continue;
-                    } else {
-                        res.addAll(tres);
-                    }
-                }
-                cache.put(s * n + e, res);
-                return res;
-            }
-        }
-        res.clear();
-        return res;
+        return -1;
     }
 
 
@@ -251,7 +147,7 @@ public class Solution {
 		Semaphore semaphore = new Semaphore(5);
 		semaphore.tryAcquire(10, TimeUnit.MILLISECONDS);
 		semaphore.release();
-		System.out.println(s.movesToStamp("zbs", "zbzbsbszbssbzbszbsss"));
+		System.out.println(s.movesToStamp("abc", "ababc"));
 	}
 
 }

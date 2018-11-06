@@ -55,6 +55,7 @@ public class CodeJam {
 
     char[][] table;
     Map<Integer, Set<Integer>> pathMap = new HashMap<>();
+    Map<Integer, Integer> fixed = new HashMap<>();
 
     int[] dx = new int[]{-1, 1, 0, 0};
     int[] dy = new int[]{0,0, 1, -1};
@@ -82,14 +83,77 @@ public class CodeJam {
                 int res = dfs(index, path, 0);
                 if (res == 1) {
                     // circle
+                    for (int cur: path) {
+                        int x = cur / 2 / C;
+                        int y = cur / 2 % C;
+                        if (isShooter(x, y)) {
+                            int d = cur & 1;
+                            int number = x * C + y;
+                            if (fixed.containsKey(number) && fixed.get(number) != (d^1)) {
+                                System.out.println("IMPOSSIBLE");
+                                out.println("IMPOSSIBLE");
+                                return;
+                            }
+                            fixed.put(number, d^1);
+                            if ((d^1) == 0) {
+                                table[x][y] = '-';
+                            } else {
+                                table[x][y] = '|';
+                            }
+                        }
+                    }
                 } else {
                     Set<Integer> path2 = new HashSet<>();
                     dfs(index, path2, 1);
                     path.addAll(path2);
                 }
-                for (int cur: path) pathMap.put(cur, path);
+
+                int cntShooter = 0;
+                for (int cur: path) {
+                    pathMap.put(cur, path);
+                    int x = cur / 2 / C;
+                    int y = cur / 2 % C;
+                    if (isShooter(x, y)) cntShooter ++;
+                }
+                if (cntShooter >= 2) {
+                    for (int cur: path) {
+                        int x = cur / 2 / C;
+                        int y = cur / 2 % C;
+                        if (isShooter(x, y)) {
+                            int d = cur & 1;
+                            int number = x * C + y;
+                            if (fixed.containsKey(number) && fixed.get(number) != (d^1)) {
+                                System.out.println("IMPOSSIBLE");
+                                out.println("IMPOSSIBLE");
+                                return;
+                            }
+                            fixed.put(number, d^1);
+                            if ((d^1) == 0) {
+                                table[x][y] = '-';
+                            } else {
+                                table[x][y] = '|';
+                            }
+                        }
+                    }
+                }
             }
-            Set<Integer> path = pathMap.get(index);
+        }
+
+        boolean updated = true;
+        while (updated) {
+            updated = false;
+            for (int i = 0; i < R; i++) for (int j = 0; j < C; j++) if (table[i][j] == '.') {
+                int index = (i * R + C) * 2
+                Set<Integer> path1 = pathMap.get(index);
+                Set<Integer> path2 = pathMap.get(index ^ 1);
+                int cnt1 = countShoot(path1);
+                int cnt2 = countShoot(path2);
+                if (cnt1 == 0 && cnt2 == 0) {
+                    System.out.println("IMPOSSIBLE");
+                    out.println("IMPOSSIBLE");
+                    return;
+                }
+            }
         }
 
 //        if (ans == IMPO) {
@@ -99,6 +163,28 @@ public class CodeJam {
             System.out.println(ans + " " + promote);
             out.println(ans + " " + promote);
 //        }
+    }
+
+    private int countShoot(Set<Integer> path) {
+        int cnt = 0;
+        for (int cur: path) {
+            int x = cur / 2 / C;
+            int y = cur / 2 % C;
+            if (isShooter(x, y)) {
+                int d = cur & 1;
+                int number = x * C + y;
+                if (fixed.containsKey(number)) {
+                    if (fixed.get(number) == d) cnt++;
+                } else {
+                    cnt++;
+                }
+            }
+        }
+        return cnt;
+    }
+
+    private boolean isShooter(int x, int y) {
+        return table[x][y] == '|' || table[x][y] == '-';
     }
 
     private int dfs(int index, Set<Integer> path, int d) {
