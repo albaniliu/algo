@@ -21,7 +21,7 @@ public class TwoSAT {
         selected = new boolean[n*2];
     }
 
-    public void addReverse(int x, int y) {
+    public void addClause(int x, int y) {
         x = x * 2;
         y = y * 2;
         graph.get(x ^ 1).add(y);

@@ -326,7 +326,7 @@ public class CodeJam {
                     break;
                 }
             }
-            addVerse(s1^1, s2^1);
+            addClause(s1, s2);
         }
         if (!solve()) {
             System.out.println("IMPOSSIBLE");
@@ -348,7 +348,19 @@ public class CodeJam {
                 System.out.println();
                 out.println();
             }
-
+            for (int i = 0; i < R; i++) for (int j = 0; j < C; j++) if (isShooter(i, j)) {
+                int index = (i * C + j) * 2;
+                if (table[i][j] == '|') index++;
+                Set<Integer> path = pathMap.get(index);
+                for (int cur : path) {
+                    int x = cur / 2 / C;
+                    int y = cur / 2 % C;
+                    if (table[x][y] == '.') cover[x][y] = true;
+                }
+            }
+            for (int i = 0; i < R; i++) for (int j = 0; j < C; j++) if (table[i][j] == '.' && !cover[i][j]) {
+                System.out.println(i + " " + j);
+            }
         }
 
 //        if (ans == IMPO) {
@@ -363,6 +375,7 @@ public class CodeJam {
     private boolean solve() {
         for (int i = 0; i < cnt; i+=2) {
             if (!select[i] && !select[i^1]) {
+                ptr = 0;
                 if (!dfs(i)) {
                     while (ptr > 0) select[skt[--ptr]] = false;
                     if (!dfs(i ^ 1)) return false;
@@ -383,7 +396,7 @@ public class CodeJam {
         return true;
     }
 
-    private void addVerse(int x, int y) {
+    private void addClause(int x, int y) {
         graph.get(x ^ 1).add(y);
         graph.get(y ^ 1).add(x);
     }
@@ -447,8 +460,8 @@ public class CodeJam {
 
     public static void main(String[] args) throws NumberFormatException, IOException {
         
-//      String fileName = "/Users/mobike/IdeaProjects/algo/example.txt";
-//      String outFile = "/Users/mobike/IdeaProjects/algo/example-out.txt";
+//      String fileName = "C://Users/user/eclipse-workspace/algo/example.txt";
+//      String outFile = "C://Users/user/eclipse-workspace/algo/example-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/A-small-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/A-small-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/A-large-practice.in";
@@ -457,10 +470,10 @@ public class CodeJam {
 //      String outFile = "C://Users/user/eclipse-workspace/algo/B-small-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/B-large-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/B-large-out.txt";
-//      String fileName = "/Users/mobike/IdeaProjects/algo/C-small-practice.in";
-//      String outFile = "/Users/mobike/IdeaProjects/algo/C-small-out.txt";
-      String fileName = "/Users/mobike/IdeaProjects/algo/C-large-practice.in";
-      String outFile = "/Users/mobike/IdeaProjects/algo/C-large-out.txt";
+//      String fileName = "C://Users/user/eclipse-workspace/algo/C-small-practice.in";
+//      String outFile = "C://Users/user/eclipse-workspace/algo/C-small-out.txt";
+      String fileName = "C://Users/user/eclipse-workspace/algo/C-large-practice.in";
+      String outFile = "C://Users/user/eclipse-workspace/algo/C-large-out.txt";
 //      String fileName = "d://codejam/D-small-practice.in";
 //      String outFile = "d://codejam/D-small-out.txt";
 //      String fileName = "d://codejam/D-large-practice.in";
