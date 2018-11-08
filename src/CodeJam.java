@@ -5,6 +5,14 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class CodeJam {
+    class Pair<K, V> {
+        K first;
+        V second;
+        public Pair(K k, V v) {
+            first = k;
+            second = v;
+        }
+    }
     private boolean contain(int set, int i) {
         return (set & (1<<i)) > 0;
     }
@@ -54,313 +62,69 @@ public class CodeJam {
     long IMPO;
 
     char[][] table;
-    boolean[][] cover;
-    Map<Integer, Set<Integer>> pathMap = new HashMap<>();
-    Map<Integer, Integer> fixed = new HashMap<>();
-    List<List<Integer>> graph = new ArrayList<>();
+
     int[] skt;
     boolean[] select;
-    int ptr;
-    int cnt;
+    int cntS;
+    int cntT;
+    Map<Integer, Integer> mapT = new HashMap<>();
+    List<Integer> listT = new ArrayList<>();
+    Map<Integer, Integer> mapS = new HashMap<>();
+    List<Integer> listS = new ArrayList<>();
+    Map<Integer, Set<Integer>> seen = new HashMap<>();
+    List<int[]> ans = new ArrayList<>();
 
-    int[] dx = new int[]{0,0, 1, -1};
-    int[] dy = new int[]{-1, 1, 0, 0};
+    int[] dx = new int[]{1,0, -1, 0};
+    int[] dy = new int[]{0, -1, 0, 1};
     public void run(BufferedReader br, PrintWriter out) throws IOException {
 
         IMPO = 1000000000;
         IMPO = IMPO * 1000000000l;
 
         String[] sp = br.readLine().split(" ");
-        R = Integer.parseInt(sp[0]);
-        C = Integer.parseInt(sp[1]);
+        C = Integer.parseInt(sp[0]);
+        R = Integer.parseInt(sp[1]);
+        M = Integer.parseInt(sp[2]);
         table = new char[R][C];
-        cover = new boolean[R][C];
         for (int i = 0; i < R; i++) {
-            sp = br.readLine().split(" ");
+            String line = br.readLine();
             for (int j = 0; j < C; j++) {
-                table[i][j] = sp[0].charAt(j);
-            }
-        }
-
-        for (int i = 0; i < R; i++) for (int j = 0; j < C; j++) {
-            if (table[i][j] == '#') continue;
-            if (table[i][j] == '\\' || table[i][j] == '/' ) continue;
-            if (i == 1 && j == 16) {
-                int a = 0;
-            }
-            int index = (i * C + j) * 2;
-            if (!pathMap.containsKey(index)) {
-                Set<Integer> path = new HashSet<>();
-                int res = dfs(index, path, 0);
-                if (res == 1) {
-                    // circle
-                    for (int cur: path) {
-                        int x = cur / 2 / C;
-                        int y = cur / 2 % C;
-                        if (isShooter(x, y)) {
-                            int d = cur & 1;
-                            int number = x * C + y;
-                            if (fixed.containsKey(number) && fixed.get(number) != (d^1)) {
-                                System.out.println("IMPOSSIBLE");
-                                out.println("IMPOSSIBLE");
-                                return;
-                            }
-                            fixed.put(number, d^1);
-                            if ((d^1) == 0) {
-                                table[x][y] = '-';
-                            } else {
-                                table[x][y] = '|';
-                            }
-                        }
-                    }
-                } else {
-                    Set<Integer> path2 = new HashSet<>();
-                    dfs(index, path2, 1);
-                    path.addAll(path2);
-                }
-
-                int cntShooter = 0;
-                for (int cur: path) {
-                    pathMap.put(cur, path);
-                    int x = cur / 2 / C;
-                    int y = cur / 2 % C;
-                    if (isShooter(x, y)) cntShooter ++;
-                }
-                if (cntShooter >= 2) {
-                    for (int cur: path) {
-                        int x = cur / 2 / C;
-                        int y = cur / 2 % C;
-                        if (isShooter(x, y)) {
-                            int d = cur & 1;
-                            int number = x * C + y;
-                            if (fixed.containsKey(number) && fixed.get(number) != (d^1)) {
-                                System.out.println("IMPOSSIBLE");
-                                out.println("IMPOSSIBLE");
-                                return;
-                            }
-                            fixed.put(number, d^1);
-                            if ((d^1) == 0) {
-                                table[x][y] = '-';
-                            } else {
-                                table[x][y] = '|';
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!pathMap.containsKey(index^1)) {
-                Set<Integer> path = new HashSet<>();
-                int res = dfs(index^1, path, 2);
-                if (res == 1) {
-                    // circle
-                    for (int cur: path) {
-                        int x = cur / 2 / C;
-                        int y = cur / 2 % C;
-                        if (isShooter(x, y)) {
-                            int d = cur & 1;
-                            int number = x * C + y;
-                            if (fixed.containsKey(number) && fixed.get(number) != (d^1)) {
-                                System.out.println("IMPOSSIBLE");
-                                out.println("IMPOSSIBLE");
-                                return;
-                            }
-                            fixed.put(number, d^1);
-                            if ((d^1) == 0) {
-                                table[x][y] = '-';
-                            } else {
-                                table[x][y] = '|';
-                            }
-                        }
-                    }
-                } else {
-                    Set<Integer> path2 = new HashSet<>();
-                    dfs(index^1, path2, 3);
-                    path.addAll(path2);
-                }
-
-                int cntShooter = 0;
-                for (int cur: path) {
-                    pathMap.put(cur, path);
-                    int x = cur / 2 / C;
-                    int y = cur / 2 % C;
-                    if (isShooter(x, y)) cntShooter ++;
-                }
-                if (cntShooter >= 2) {
-                    for (int cur: path) {
-                        int x = cur / 2 / C;
-                        int y = cur / 2 % C;
-                        if (isShooter(x, y)) {
-                            int d = cur & 1;
-                            int number = x * C + y;
-                            if (fixed.containsKey(number) && fixed.get(number) != (d^1)) {
-                                System.out.println("IMPOSSIBLE");
-                                out.println("IMPOSSIBLE");
-                                return;
-                            }
-                            fixed.put(number, d^1);
-                            if ((d^1) == 0) {
-                                table[x][y] = '-';
-                            } else {
-                                table[x][y] = '|';
-                            }
-                        }
-                    }
+                table[i][j] = line.charAt(j);
+                if (table[i][j] == 'T') {
+                    mapT.put(tran(i, j), cntT);
+                    listT.add(tran(i, j));
+                    cntT++;
+                } else if (table[i][j] == 'S') {
+                    mapS.put(tran(i, j), cntS);
+                    listS.add(tran(i, j));
+                    cntS++;
                 }
             }
         }
-
-        boolean updated = true;
-        while (updated) {
-            updated = false;
-            for (int i = 0; i < R; i++) for (int j = 0; j < C; j++) if (table[i][j] == '.' && !cover[i][j]) {
-                int index = (i * C + j) * 2;
-                if (i == 0 && j == 0) {
-                    int a = 0;
-                }
-                Set<Integer> path1 = pathMap.get(index);
-                Set<Integer> path2 = pathMap.get(index ^ 1);
-                int cnt1 = countShoot(path1);
-                int cnt2 = countShoot(path2);
-                if (cnt1 == 0 && cnt2 == 0) {
-                    System.out.println("IMPOSSIBLE");
-                    out.println("IMPOSSIBLE");
-                    return;
-                } else if (cnt1 == 1 && cnt2 == 1) {
-                    continue;
-                } else if (cnt1 == 1 && !cover[i][j]) {
-                    for (int cur: path1) {
-                        int x = cur / 2 / C;
-                        int y = cur / 2 % C;
-                        if (isShooter(x, y)) {
-                            int d = cur & 1;
-                            int number = x * C + y;
-                            fixed.put(number, d);
-                            if (d == 0) {
-                                table[x][y] = '-';
-                            } else {
-                                table[x][y] = '|';
-                            }
-                        }
-                    }
-                    for (int cur : path1) {
-                        int x = cur / 2 / C;
-                        int y = cur / 2 % C;
-                        if (table[x][y] == '.') cover[x][y] = true;
-                    }
-                    cover[i][j] = true;
-                    updated = true;
-                } else if (cnt2 == 1 && !cover[i][j]) {
-                    for (int cur: path2) {
-                        int x = cur / 2 / C;
-                        int y = cur / 2 % C;
-                        if (isShooter(x, y)) {
-                            int d = cur & 1;
-                            int number = x * C + y;
-                            fixed.put(number, d);
-                            if (d == 0) {
-                                table[x][y] = '-';
-                            } else {
-                                table[x][y] = '|';
-                            }
-                        }
-                    }
-                    for (int cur : path2) {
-                        int x = cur / 2 / C;
-                        int y = cur / 2 % C;
-                        if (table[x][y] == '.') cover[x][y] = true;
-                    }
-                    cover[i][j] = true;
-                    updated = true;
+        for (int i = 0; i < R; i++) for (int j = 0; j < C; j++) if (table[i][j] != '#') {
+            Set<Integer> set = new HashSet<>();
+            for (int d = 0; d < 4; d++) {
+                int x = i;
+                int y = j;
+                while (inTable(x, y) && table[x][y] != '#') {
+                    if (table[x][y] == 'T')
+                        set.add(tran(x, y));
+                    x += dx[d];
+                    y += dy[d];
                 }
             }
+            seen.put(tran(i, j), set);
         }
 
-        for (int i = 0; i < R; i++) for (int j = 0; j < C; j++) if (isShooter(i, j) && fixed.containsKey(i * C + j)) {
-            int index = (i * C + j) * 2;
-            if (table[i][j] == '|') index++;
-            Set<Integer> path = pathMap.get(index);
-            for (int cur : path) {
-                int x = cur / 2 / C;
-                int y = cur / 2 % C;
-                if (table[x][y] == '.') cover[x][y] = true;
-            }
-        }
+        int[][] dp = new int[1<<cntS][1<<cntT];
+        List<int[]> list = new ArrayList<>();
+        solve(dp, (1<<cntS) - 1, (1<<cntT) -1, list);
 
-        Map<Integer, Integer> indexMap = new HashMap<>();
-        cnt = 0;
-        for (int i = 0; i < R; i++) for (int j = 0; j < C; j++) if (isShooter(i, j) && !fixed.containsKey(i * C + j)) {
-            int index =  (i * C + j) * 2;
-            indexMap.put(index, cnt++);
-            indexMap.put(index^1, cnt++);
-        }
-
-        for (int i = 0; i < cnt; i++) graph.add(new ArrayList<>());
-        skt = new int[cnt];
-        select = new boolean[cnt];
-        ptr = 0;
-        for (int i= 0; i < R; i++) for (int j = 0; j < C; j++) if (table[i][j] == '.' && !cover[i][j]) {
-            int index = (i * C + j) * 2;
-            Set<Integer> path1 = pathMap.get(index);
-            Set<Integer> path2 = pathMap.get(index ^ 1);
-            int s1 = 0;
-            int s2 = 0;
-            for (int cur:path1) {
-                int x = cur / 2 / C;
-                int y = cur / 2 % C;
-                if (isShooter(x, y)) {
-                    try {
-                        s1 = indexMap.get(cur);
-                        break;
-                    } catch (Exception e) {
-                       System.out.println(x + " " + y + " " + cur + " " + indexMap);
-                       throw e;
-                    }
-                }
-            }
-            for (int cur: path2) {
-                int x = cur / 2 / C;
-                int y = cur / 2 % C;
-                if (isShooter(x, y)) {
-                    s2 = indexMap.get(cur);
-                    break;
-                }
-            }
-            addClause(s1, s2);
-        }
-        if (!solve()) {
-            System.out.println("IMPOSSIBLE");
-            out.println("IMPOSSIBLE");
-        } else {
-            System.out.println("POSSIBLE");
-            out.println("POSSIBLE");
-            for (int i = 0; i < R; i++) {
-                for (int j = 0; j < C; j++) {
-                    if (isShooter(i, j) && !fixed.containsKey(i * C + j)) {
-                        int index = (i * C + j) * 2;
-                        int nindex = indexMap.get(index);
-                        if (select[nindex]) table[i][j] = '-';
-                        else table[i][j] = '|';
-                    }
-                    System.out.print(table[i][j]);
-                    out.print(table[i][j]);
-                }
-                System.out.println();
-                out.println();
-            }
-            for (int i = 0; i < R; i++) for (int j = 0; j < C; j++) if (isShooter(i, j)) {
-                int index = (i * C + j) * 2;
-                if (table[i][j] == '|') index++;
-                Set<Integer> path = pathMap.get(index);
-                for (int cur : path) {
-                    int x = cur / 2 / C;
-                    int y = cur / 2 % C;
-                    if (table[x][y] == '.') cover[x][y] = true;
-                }
-            }
-            for (int i = 0; i < R; i++) for (int j = 0; j < C; j++) if (table[i][j] == '.' && !cover[i][j]) {
-                System.out.println(i + " " + j);
-            }
+        System.out.println(ans.size());
+        out.println("" + ans.size());
+        for (int i = 0; i < ans.size(); i++) {
+            System.out.println((ans.get(i)[0] + 1) + " " + (ans.get(i)[1] + 1));
+            out.println((ans.get(i)[0] + 1) + " " + (ans.get(i)[1] + 1));
         }
 
 //        if (ans == IMPO) {
@@ -372,90 +136,77 @@ public class CodeJam {
 //        }
     }
 
-    private boolean solve() {
-        for (int i = 0; i < cnt; i+=2) {
-            if (!select[i] && !select[i^1]) {
-                ptr = 0;
-                if (!dfs(i)) {
-                    while (ptr > 0) select[skt[--ptr]] = false;
-                    if (!dfs(i ^ 1)) return false;
-                }
-            }
+    private void solve(int[][] dp, int setS, int setT, List<int[]> list) {
+        if (list.size() > ans.size()) {
+            ans.clear();
+            ans.addAll(list);
         }
-        return true;
-    }
+        if (setS == 0) return;
+        if (setT == 0) return;
+        if (dp[setS][setT] != 0) return;
+        dp[setS][setT] = 1;
 
-    boolean dfs(int cur) {
-        if (select[cur ^ 1]) return false;
-        if (select[cur]) return true;
-        select[cur] = true;
-        skt[ptr++] = cur;
-        for (int next: graph.get(cur)) {
-            if (!dfs(next)) return false;
-        }
-        return true;
-    }
-
-    private void addClause(int x, int y) {
-        graph.get(x ^ 1).add(y);
-        graph.get(y ^ 1).add(x);
-    }
-
-    private int countShoot(Set<Integer> path) {
-        int cnt = 0;
-        for (int cur: path) {
-            int x = cur / 2 / C;
-            int y = cur / 2 % C;
-            if (isShooter(x, y)) {
-                int d = cur & 1;
-                int number = x * C + y;
-                if (fixed.containsKey(number)) {
-                    if (fixed.get(number) == d) cnt++;
+        for (int i = 0; i < cntS; i++) if (contain(setS, i)) {
+            int index = listS.get(i);
+            boolean[][] visited = new boolean[R][C];
+            int[] point = retran(index);
+            int x = point[0];
+            int y = point[1];
+            Queue<int[]> queue = new LinkedList<>();
+            queue.offer(point);
+            visited[x][y] = true;
+            int move = 0;
+            while (!queue.isEmpty()) {
+                if (move <= M) {
+                    int size = queue.size();
+                    for (int s = 0; s< size; s++) {
+                        point = queue.poll();
+                        Set<Integer> see = seen.get(tran(point[0], point[1]));
+                        boolean stop = false;
+                        if (see != null) {
+                            for (int t : see) {
+                                int ti = mapT.get(t);
+                                if (contain(setT, ti)) {
+                                    stop = true;
+                                    list.add(new int[]{i, ti});
+                                    solve(dp, setS - (1 << i), setT - (1 << ti), list);
+                                    list.remove(list.size() - 1);
+                                }
+                            }
+                        }
+                        if (stop) {
+                            continue;
+                        }
+                        for (int k = 0; k < 4; k++) {
+                            int nx = point[0] + dx[k];
+                            int ny = point[1] + dy[k];
+                            if (!inTable(nx, ny) || table[nx][ny] == '#') continue;
+                            if (visited[nx][ny]) continue;
+                            visited[nx][ny] = true;
+                            queue.add(new int[]{nx, ny});
+                        }
+                    }
                 } else {
-                    cnt++;
+                    break;
                 }
+                move ++;
             }
         }
-        return cnt;
     }
 
-    private boolean isShooter(int x, int y) {
-        return table[x][y] == '|' || table[x][y] == '-';
+    private int[] retran(int index) {
+        int[] res = new int[2];
+        res[0] = index / C;
+        res[1] = index % C;
+        return res;
     }
 
-    private int dfs(int index, Set<Integer> path, int d) {
-        if (path.contains(index)) return 1;
-        int x = index / 2 / C;
-        int y = index / 2 % C;
-        if (x < 0 || x >= R || y < 0 || y >= C) return 0;
-        if (table[x][y] == '#') return 0;
-
-        if (table[x][y] == '\\' || table[x][y] == '/') {
-            d = change(d, table[x][y]);
-        } else {
-            path.add(index);
-        }
-
-        int nx = x + dx[d];
-        int ny = y + dy[d];
-        if (nx < 0 || nx >= R || ny < 0 || ny >= C) return 0;
-        int nindex = (nx * C + ny) * 2 + (d > 1?1:0);
-        return dfs(nindex, path, d);
+    private int tran(int x, int y) {
+        return x * C + y;
     }
 
-    private int change(int d, char c) {
-        if (c == '\\') {
-            if (d == 0) return 3;
-            if (d == 1) return 2;
-            if (d == 2) return 1;
-            if (d == 3) return 0;
-        } else if (c == '/') {
-            if (d == 0) return 2;
-            if (d == 1) return 3;
-            if (d == 2) return 0;
-            if (d == 3) return 1;
-        }
-        throw new RuntimeException("change error");
+    private boolean inTable(int x, int y) {
+        return x>=0 && x< R && y >= 0 && y < C;
     }
 
     public static void main(String[] args) throws NumberFormatException, IOException {
@@ -472,10 +223,10 @@ public class CodeJam {
 //      String outFile = "C://Users/user/eclipse-workspace/algo/B-large-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/C-small-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/C-small-out.txt";
-      String fileName = "C://Users/user/eclipse-workspace/algo/C-large-practice.in";
-      String outFile = "C://Users/user/eclipse-workspace/algo/C-large-out.txt";
-//      String fileName = "d://codejam/D-small-practice.in";
-//      String outFile = "d://codejam/D-small-out.txt";
+//      String fileName = "C://Users/user/eclipse-workspace/algo/C-large-practice.in";
+//      String outFile = "C://Users/user/eclipse-workspace/algo/C-large-out.txt";
+      String fileName = "C://Users/user/eclipse-workspace/algo/D-small-practice.in";
+      String outFile = "C://Users/user/eclipse-workspace/algo/D-small-out.txt";
 //      String fileName = "d://codejam/D-large-practice.in";
 //      String outFile = "d://codejam/D-large-out.txt";
       
