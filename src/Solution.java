@@ -60,12 +60,6 @@ class Interval {
     Interval(int s, int e) { start = s; end = e; }
 }
 
-interface Master {
-     public static  int guess(String word) {
-		return 0;
-	}
-}
-
 class Node {
 	int val;
 	public Node(int v) {
@@ -75,59 +69,38 @@ class Node {
 
 public class Solution {
 
-    List<List<Integer>> pre = new ArrayList<>();
-    List<List<Integer>> after = new ArrayList<>();
-    int[][] dp;
-    int n;
+    int mod = 1_000_000_007;
 
-    public int[] movesToStamp(String stamp, String target) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(target);
-        n = target.length();
-        StringBuilder t = new StringBuilder();
-        for (int i = 0; i < n; i++) {
-            t.append('*');
+    public int distinctSubseqII(String S) {
+        int[] last = new int[26];
+        for (int i = 0; i < last.length; i++) last[i] = -1;
+        int[] dp = new int[S.length()];
+        for (int i = 0; i < S.length(); i++) {
+            int res = 0;
+            if (last[S.charAt(i) - 'a'] == -1) res++;
+            for (int j = Math.max(0, last[S.charAt(i) - 'a']); j < i; j++) {
+                res += dp[j];
+                res %= mod;
+            }
+            dp[i] = res;
+            last[S.charAt(i) - 'a'] = i;
         }
-        List<Integer> ans = new ArrayList<>();
-        while (!sb.toString().equals(t.toString())) {
-            int index = replace(sb, stamp);
-            if (index == -1) return new int[0];
-            ans.add(index);
+        int res = 0;
+        for (int i = 0; i < S.length(); i++) {
+            res += dp[i];
+            res %= mod;
         }
-        int[] res = new int[ans.size()];
-        Collections.reverse(ans);
-        for (int j = 0; j < ans.size(); j++) res[j] = ans.get(j);
-        System.out.println(ans);
         return res;
-    }
-
-    private int replace(StringBuilder sb, String stamp) {
-        for (int i = 0; i <= sb.length() - stamp.length(); i++) {
-            boolean ok = true;
-            int cntStart = 0;
-            for (int j = 0; j < stamp.length(); j++) {
-                if (sb.charAt(i+j) == '*') cntStart ++;
-                if (sb.charAt(i+j) != stamp.charAt(j) && sb.charAt(i+j) != '*') {
-                    ok = false;
-                    break;
-                }
-            }
-            if (ok && cntStart < stamp.length()) {
-                for (int j = 0; j < stamp.length(); j++) sb.setCharAt(i+j, '*');
-                return i;
-            }
-        }
-        return -1;
     }
 
 
     public static void main(String[] args) throws IOException, InterruptedException {
-		System.out.println("[[1,1,0,0],[1,1,0,1],[0,0,1,0],[0,1,0,1]]".replace("[", "{").replace("]", "}"));
+		System.out.println("[[1,1],[1,3],[3,1],[3,3],[2,2]]".replace("[", "{").replace("]", "}"));
 		Solution s = new Solution();
 		int[] A = new int[] {0,0,0,0,0,0};
 		int[] B = new int[] {327716,69772,667805,856849,78755,606982,696937,207697,275337,290550};
 		int[][] hits = new int[][] {{5,1},{1,3}};
-		int[][] grid = new int[][] {{1,1,0,0},{1,1,0,1},{0,0,1,0},{0,1,0,1}};
+		int[][] grid = new int[][] {{1,1},{1,3},{3,1},{3,3},{2,2}};
 		String[] emails = new String[] {"test.email+alex@leetcode.com","test.e.mail+bob.cathy@leetcode.com","testemail+david@lee.tcode.com"};
 		
 		TreeSet<long[]> sumSet = new TreeSet<>(new Comparator<long[]>() {
@@ -147,7 +120,7 @@ public class Solution {
 		Semaphore semaphore = new Semaphore(5);
 		semaphore.tryAcquire(10, TimeUnit.MILLISECONDS);
 		semaphore.release();
-		System.out.println(s.movesToStamp("abc", "ababc"));
+		System.out.println(s.distinctSubseqII("aba"));
 	}
 
 }
