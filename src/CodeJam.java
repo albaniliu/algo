@@ -54,165 +54,113 @@ public class CodeJam {
         return (a +b -1) / b;
     }
 
+    private int[] retran(int index) {
+        int[] res = new int[2];
+        res[0] = index / M;
+        res[1] = index % M;
+        return res;
+    }
+
+    private int tran(int x, int y) {
+        return x * M + y;
+    }
+
+    private boolean inTable(int x, int y) {
+        return x>=0 && x< N && y >= 0 && y < M;
+    }
+
     int N;
     int R;
-    int C;
+    int[][] C = new int[10][10];
     int M;
     int mod = 1_000_000_007;
     long IMPO;
-
-    char[][] table;
-
-    int[] skt;
-    boolean[] select;
-    int cntS;
-    int cntT;
-    Map<Integer, Integer> mapT = new HashMap<>();
-    List<Integer> listT = new ArrayList<>();
-    Map<Integer, Integer> mapS = new HashMap<>();
-    List<Integer> listS = new ArrayList<>();
-    Map<Integer, Set<Integer>> seen = new HashMap<>();
-    List<int[]> ans = new ArrayList<>();
+    int ans;
 
     int[] dx = new int[]{1,0, -1, 0};
     int[] dy = new int[]{0, -1, 0, 1};
+    Map<String, Boolean> dp = new HashMap<>();
+
+    class Edge {
+        int u;
+        int v;
+        int value;
+        public Edge(int u, int v) {
+            this.u = u;
+            this.v = v;
+            this.value = Integer.MAX_VALUE;
+        }
+    }
+    List<List<Integer>> graph = new ArrayList<>();
+    List<Edge> edges = new ArrayList<>();
+    boolean[] visited;
     public void run(BufferedReader br, PrintWriter out) throws IOException {
 
         IMPO = 1000000000;
         IMPO = IMPO * 1000000000l;
 
         String[] sp = br.readLine().split(" ");
-        C = Integer.parseInt(sp[0]);
-        R = Integer.parseInt(sp[1]);
-        M = Integer.parseInt(sp[2]);
-        table = new char[R][C];
-        for (int i = 0; i < R; i++) {
-            String line = br.readLine();
-            for (int j = 0; j < C; j++) {
-                table[i][j] = line.charAt(j);
-                if (table[i][j] == 'T') {
-                    mapT.put(tran(i, j), cntT);
-                    listT.add(tran(i, j));
-                    cntT++;
-                } else if (table[i][j] == 'S') {
-                    mapS.put(tran(i, j), cntS);
-                    listS.add(tran(i, j));
-                    cntS++;
-                }
+        N = Integer.parseInt(sp[0]);
+        M = Integer.parseInt(sp[1]);
+        ans = 0;
+        for (int i = 0; i < N; i++) graph.add(new ArrayList<>());
+        for (int i = 0; i < M; i++) {
+            sp = br.readLine().split(" ");
+            int u = Integer.parseInt(sp[0]) - 1;
+            int v = Integer.parseInt(sp[1]) - 1;
+            Edge e = new Edge(u, v);
+            graph.get(u).add(edges.size());
+            graph.get(v).add(edges.size());
+            edges.add(e);
+        }
+        visited = new boolean[N];
+        for (int i = 0; i < N; i++) if (!visited[i]) {
+            if (!dfs(i, -1)) {
+                System.out.println("IMPOSSIBLE");
+                out.println("IMPOSSIBLE");
+                return;
             }
         }
-        for (int i = 0; i < R; i++) for (int j = 0; j < C; j++) if (table[i][j] != '#') {
-            Set<Integer> set = new HashSet<>();
-            for (int d = 0; d < 4; d++) {
-                int x = i;
-                int y = j;
-                while (inTable(x, y) && table[x][y] != '#') {
-                    if (table[x][y] == 'T')
-                        set.add(tran(x, y));
-                    x += dx[d];
-                    y += dy[d];
-                }
-            }
-            seen.put(tran(i, j), set);
-        }
 
-        int[][] dp = new int[1<<cntS][1<<cntT];
-        List<int[]> list = new ArrayList<>();
-        solve(dp, (1<<cntS) - 1, (1<<cntT) -1, list);
-
-        System.out.println(ans.size());
-        out.println("" + ans.size());
-        for (int i = 0; i < ans.size(); i++) {
-            System.out.println((ans.get(i)[0] + 1) + " " + (ans.get(i)[1] + 1));
-            out.println((ans.get(i)[0] + 1) + " " + (ans.get(i)[1] + 1));
-        }
 
 //        if (ans == IMPO) {
 //            System.out.println("IMPOSSIBLE");
 //            out.println("IMPOSSIBLE");
 //        } else {
-//            System.out.println(ans + " " + promote);
-//            out.println(ans + " " + promote);
+            System.out.println(ans);
+            out.println(ans);
 //        }
     }
 
-    private void solve(int[][] dp, int setS, int setT, List<int[]> list) {
-        if (list.size() > ans.size()) {
-            ans.clear();
-            ans.addAll(list);
-        }
-        if (setS == 0) return;
-        if (setT == 0) return;
-        if (dp[setS][setT] != 0) return;
-        dp[setS][setT] = 1;
-
-        for (int i = 0; i < cntS; i++) if (contain(setS, i)) {
-            int index = listS.get(i);
-            boolean[][] visited = new boolean[R][C];
-            int[] point = retran(index);
-            int x = point[0];
-            int y = point[1];
-            Queue<int[]> queue = new LinkedList<>();
-            queue.offer(point);
-            visited[x][y] = true;
-            int move = 0;
-            while (!queue.isEmpty()) {
-                if (move <= M) {
-                    int size = queue.size();
-                    for (int s = 0; s< size; s++) {
-                        point = queue.poll();
-                        Set<Integer> see = seen.get(tran(point[0], point[1]));
-                        boolean stop = false;
-                        if (see != null) {
-                            for (int t : see) {
-                                int ti = mapT.get(t);
-                                if (contain(setT, ti)) {
-                                    stop = true;
-                                    list.add(new int[]{i, ti});
-                                    solve(dp, setS - (1 << i), setT - (1 << ti), list);
-                                    list.remove(list.size() - 1);
-                                }
-                            }
-                        }
-                        if (stop) {
-                            continue;
-                        }
-                        for (int k = 0; k < 4; k++) {
-                            int nx = point[0] + dx[k];
-                            int ny = point[1] + dy[k];
-                            if (!inTable(nx, ny) || table[nx][ny] == '#') continue;
-                            if (visited[nx][ny]) continue;
-                            visited[nx][ny] = true;
-                            queue.add(new int[]{nx, ny});
-                        }
-                    }
-                } else {
-                    break;
-                }
-                move ++;
+    private boolean dfs(int cur, int inEdge) {
+        visited[cur] = true;
+        for (int nextEdge: graph.get(cur)) if (nextEdge != inEdge) {
+            Edge e = edges.get(nextEdge);
+            int other = e.u == cur? e.v: e.u;
+            if (visited[other]) {
+                e.value = 1;
+            } else {
+                if (!dfs(other, nextEdge)) return false;
             }
         }
+
+        int sum = 0;
+        for (int nextEdge: graph.get(cur)) if (nextEdge != inEdge) {
+            Edge e = edges.get(nextEdge);
+            sum += e.value;
+        }
+        if (inEdge != -1) {
+            if (sum == 0) return false;
+            edges.get(inEdge).value = -sum;
+        }
+        return true;
     }
 
-    private int[] retran(int index) {
-        int[] res = new int[2];
-        res[0] = index / C;
-        res[1] = index % C;
-        return res;
-    }
-
-    private int tran(int x, int y) {
-        return x * C + y;
-    }
-
-    private boolean inTable(int x, int y) {
-        return x>=0 && x< R && y >= 0 && y < C;
-    }
 
     public static void main(String[] args) throws NumberFormatException, IOException {
         
-//      String fileName = "C://Users/user/eclipse-workspace/algo/example.txt";
-//      String outFile = "C://Users/user/eclipse-workspace/algo/example-out.txt";
+      String fileName = "C://Users/user/eclipse-workspace/algo/example.txt";
+      String outFile = "C://Users/user/eclipse-workspace/algo/example-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/A-small-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/A-small-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/A-large-practice.in";
@@ -225,10 +173,10 @@ public class CodeJam {
 //      String outFile = "C://Users/user/eclipse-workspace/algo/C-small-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/C-large-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/C-large-out.txt";
-      String fileName = "C://Users/user/eclipse-workspace/algo/D-small-practice.in";
-      String outFile = "C://Users/user/eclipse-workspace/algo/D-small-out.txt";
-//      String fileName = "d://codejam/D-large-practice.in";
-//      String outFile = "d://codejam/D-large-out.txt";
+//      String fileName = "C://Users/user/eclipse-workspace/algo/D-small-practice.in";
+//      String outFile = "C://Users/user/eclipse-workspace/algo/D-small-out.txt";
+//      String fileName = "C://Users/user/eclipse-workspace/algo/D-large-practice.in";
+//      String outFile = "C://Users/user/eclipse-workspace/algo/D-large-out.txt";
       
       BufferedReader br = new BufferedReader(new FileReader(fileName));
       PrintWriter out = new PrintWriter(outFile);
