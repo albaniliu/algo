@@ -1,10 +1,12 @@
+package codejam;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
-public class CodeJam {
+public class Round_3_2017_B {
     class Pair<K, V> {
         K first;
         V second;
