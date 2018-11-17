@@ -1,9 +1,2 @@
-Case #1: POSSIBLE
--2 -1 -1 -1 
-Case #2: POSSIBLE
--1 -1 
-Case #3: IMPOSSIBLE
-Case #4: POSSIBLE
--1 -1 -1 
-Case #5: POSSIBLE
--1 1 1 
+Case #1: 192
+Case #2: 32
