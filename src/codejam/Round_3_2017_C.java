@@ -7,81 +7,18 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class Round_3_2017_C {
-    class Pair<K, V> {
-        K first;
-        V second;
-        public Pair(K k, V v) {
-            first = k;
-            second = v;
-        }
-    }
-    private boolean contain(int set, int i) {
-        return (set & (1<<i)) > 0;
-    }
 
-    private static int gcd(int a, int b) {
-        if (b == 0) return a;
-        return gcd(b, a%b);
-    }
-
-    private long pow(long a, long p) {
-        if (p == 0) return 1;
-        long b = pow(a, p/2);
-        b = b * b;
-        if (p % 2 == 1) b *= a;
-        return b % mod;
-    }
-
-    private static boolean isSame(double a, double b) {
-        return Math.abs(a - b) < 1e-10;
-    }
-
-    private static void swapBoolean(boolean[] p, int i, int j) {
-        boolean tmp = p[i];
-        p[i] = p[j];
-        p[j] = tmp;
-    }
 
     private static void swap(int[] p, int i, int j) {
         int tmp = p[i];
         p[i] = p[j];
         p[j] = tmp;
     }
-    private static int countOne(int a) {
-        if (a == 0) return 0;
-        return countOne(a & (a-1)) + 1;
-    }
-
-    private static int sdiv(int a, int b) {
-        return (a +b -1) / b;
-    }
-
-    private int[] retran(int index) {
-        int[] res = new int[2];
-        res[0] = index / M;
-        res[1] = index % M;
-        return res;
-    }
-
-    private int tran(int x, int y) {
-        return x * M + y;
-    }
-
-    private boolean inTable(int x, int y) {
-        return x>=0 && x< N && y >= 0 && y < M;
-    }
 
     int N;
-    int R;
-    int[][] C = new int[10][10];
-    int M;
-    int mod = 1_000_000_007;
+
     long IMPO;
     int ans;
-
-    int[] dx = new int[]{1,0, -1, 0};
-    int[] dy = new int[]{0, -1, 0, 1};
-    Map<String, Boolean> dp = new HashMap<>();
 
     class Edge {
         int u;
@@ -98,7 +35,6 @@ public class Round_3_2017_C {
     List<List<Integer>> graph = new ArrayList<>();
     List<Edge> edges = new ArrayList<>();
     int[] parent;
-    boolean[] visited;
     public void run(BufferedReader br, PrintWriter out) throws IOException {
 
         IMPO = 1000000000;
@@ -246,7 +182,7 @@ public class Round_3_2017_C {
         for (int i = 1; i <= T; i++) {
         	out.print("Case #" + i + ": ");
             System.out.print("Case #" + i + ": ");
-            CodeJam jam = new CodeJam();
+            Round_3_2017_C jam = new Round_3_2017_C();
             jam.run(br, out);
             out.flush();
         }
