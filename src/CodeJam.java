@@ -105,39 +105,7 @@ public class CodeJam {
         N = Integer.parseInt(sp[0]);
         M = Integer.parseInt(sp[1]);
         ans = 0;
-        for (int i = 0; i < N; i++) graph.add(new ArrayList<>());
-        for (int i = 0; i < M; i++) {
-            sp = br.readLine().split(" ");
-            int u = Integer.parseInt(sp[0]) - 1;
-            int v = Integer.parseInt(sp[1]) - 1;
-            Edge e = new Edge(u, v);
-            graph.get(u).add(edges.size());
-            graph.get(v).add(edges.size());
-            edges.add(e);
-        }
-        visited = new boolean[N];
-        for (int i = 0; i < N; i++) if (!visited[i]) {
-            if (dfs(i, -1) == -1) {
-                System.out.println("IMPOSSIBLE");
-                out.println("IMPOSSIBLE");
-                return;
-            }
-        }
-//        System.out.println("POSSIBLE");
-//        out.println("POSSIBLE");
-        for (Edge e: edges) {
-            if (e.di) {
-                System.out.print(e.value);
-                out.print(e.value);
-            } else {
-                System.out.print(-e.value);
-                out.print(-e.value);
-            }
-            System.out.print(" ");
-            out.print(" ");
-        }
-        System.out.println();
-        out.println();
+
 
 
 //        if (ans == IMPO) {
@@ -149,36 +117,6 @@ public class CodeJam {
 //        }
     }
 
-    private int dfs(int cur, int inEdge) {
-        visited[cur] = true;
-        int sum = 0;
-        int inSum = 0;
-        for (int nextEdge: graph.get(cur)) if (nextEdge != inEdge) {
-            Edge e = edges.get(nextEdge);
-            int other = e.u == cur? e.v: e.u;
-            if (visited[other]) {
-                if (e.value == Integer.MAX_VALUE) {
-                    e.value = 1;
-                    sum++;
-                    if (e.u == cur) e.di = false;
-                } else {
-                    inSum++;
-                }
-            } else {
-                int tmp = dfs(other, nextEdge);
-                if (tmp == -1) return tmp;
-                sum+=tmp;
-            }
-        }
-
-        sum -= inSum;
-        if (inEdge != -1) {
-            if (sum == 0) return -1;
-            edges.get(inEdge).value = -sum;
-            if (edges.get(inEdge).u == cur) edges.get(inEdge).di = false;
-        }
-        return sum;
-    }
 
 
     public static void main(String[] args) throws NumberFormatException, IOException {

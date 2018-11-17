@@ -7,69 +7,6 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class Round_3_2017_B {
-    class Pair<K, V> {
-        K first;
-        V second;
-        public Pair(K k, V v) {
-            first = k;
-            second = v;
-        }
-    }
-    private boolean contain(int set, int i) {
-        return (set & (1<<i)) > 0;
-    }
-
-    private static int gcd(int a, int b) {
-        if (b == 0) return a;
-        return gcd(b, a%b);
-    }
-    
-    private long pow(long a, long p) {
-        if (p == 0) return 1;
-        long b = pow(a, p/2);
-        b = b * b;
-        if (p % 2 == 1) b *= a;
-        return b % mod;
-    }
-    
-    private static boolean isSame(double a, double b) {
-        return Math.abs(a - b) < 1e-10;
-    }
-
-    private static void swapBoolean(boolean[] p, int i, int j) {
-        boolean tmp = p[i];
-        p[i] = p[j];
-        p[j] = tmp;
-    }
-
-    private static void swap(long[] p, int i, int j) {
-        long tmp = p[i];
-        p[i] = p[j];
-        p[j] = tmp;
-    }
-    private static int countOne(int a) {
-        if (a == 0) return 0;
-        return countOne(a & (a-1)) + 1;
-    }
-
-    private static int sdiv(int a, int b) {
-        return (a +b -1) / b;
-    }
-
-    private int[] retran(int index) {
-        int[] res = new int[2];
-        res[0] = index / M;
-        res[1] = index % M;
-        return res;
-    }
-
-    private int tran(int x, int y) {
-        return x * M + y;
-    }
-
-    private boolean inTable(int x, int y) {
-        return x>=0 && x< N && y >= 0 && y < M;
-    }
 
     int N;
     int R;
@@ -125,8 +62,6 @@ public class Round_3_2017_B {
                 return;
             }
         }
-//        System.out.println("POSSIBLE");
-//        out.println("POSSIBLE");
         for (Edge e: edges) {
             if (e.di) {
                 System.out.print(e.value);
@@ -141,14 +76,6 @@ public class Round_3_2017_B {
         System.out.println();
         out.println();
 
-
-//        if (ans == IMPO) {
-//            System.out.println("IMPOSSIBLE");
-//            out.println("IMPOSSIBLE");
-//        } else {
-//            System.out.println(ans);
-//            out.println(ans);
-//        }
     }
 
     private int dfs(int cur, int inEdge) {
@@ -184,25 +111,10 @@ public class Round_3_2017_B {
 
 
     public static void main(String[] args) throws NumberFormatException, IOException {
-        
-//      String fileName = "/Users/mobike/IdeaProjects/algo/example.txt";
-//      String outFile = "/Users/mobike/IdeaProjects/algo/example-out.txt";
-//      String fileName = "C://Users/user/eclipse-workspace/algo/A-small-practice.in";
-//      String outFile = "C://Users/user/eclipse-workspace/algo/A-small-out.txt";
-//      String fileName = "C://Users/user/eclipse-workspace/algo/A-large-practice.in";
-//      String outFile = "C://Users/user/eclipse-workspace/algo/A-large-out.txt";
-//      String fileName = "/Users/mobike/IdeaProjects/algo/B-small-practice.in";
-//      String outFile = "/Users/mobike/IdeaProjects/algo/B-small-out.txt";
-      String fileName = "/Users/mobike/IdeaProjects/algo/B-large-practice.in";
-      String outFile = "/Users/mobike/IdeaProjects/algo/B-large-out.txt";
-//      String fileName = "C://Users/user/eclipse-workspace/algo/C-small-practice.in";
-//      String outFile = "C://Users/user/eclipse-workspace/algo/C-small-out.txt";
-//      String fileName = "C://Users/user/eclipse-workspace/algo/C-large-practice.in";
-//      String outFile = "C://Users/user/eclipse-workspace/algo/C-large-out.txt";
-//      String fileName = "C://Users/user/eclipse-workspace/algo/D-small-practice.in";
-//      String outFile = "C://Users/user/eclipse-workspace/algo/D-small-out.txt";
-//      String fileName = "C://Users/user/eclipse-workspace/algo/D-large-practice.in";
-//      String outFile = "C://Users/user/eclipse-workspace/algo/D-large-out.txt";
+
+      String fileName = "/B-large-practice.in";
+      String outFile = "/B-large-out.txt";
+
       
       BufferedReader br = new BufferedReader(new FileReader(fileName));
       PrintWriter out = new PrintWriter(outFile);
@@ -212,7 +124,7 @@ public class Round_3_2017_B {
         for (int i = 1; i <= T; i++) {
         	out.print("Case #" + i + ": ");
             System.out.print("Case #" + i + ": ");
-            CodeJam jam = new CodeJam();
+            Round_3_2017_B jam = new Round_3_2017_B();
             jam.run(br, out);
             out.flush();
         }
