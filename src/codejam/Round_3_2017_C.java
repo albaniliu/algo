@@ -1,10 +1,12 @@
+package codejam;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
-public class CodeJam {
+public class Round_3_2017_C {
     class Pair<K, V> {
         K first;
         V second;
@@ -21,7 +23,7 @@ public class CodeJam {
         if (b == 0) return a;
         return gcd(b, a%b);
     }
-    
+
     private long pow(long a, long p) {
         if (p == 0) return 1;
         long b = pow(a, p/2);
@@ -29,7 +31,7 @@ public class CodeJam {
         if (p % 2 == 1) b *= a;
         return b % mod;
     }
-    
+
     private static boolean isSame(double a, double b) {
         return Math.abs(a - b) < 1e-10;
     }
