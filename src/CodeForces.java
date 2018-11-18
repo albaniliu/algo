@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
-public class CodeJam {
+public class CodeForces {
     class Pair<K, V> {
         K first;
         V second;
@@ -25,7 +25,7 @@ public class CodeJam {
     private long pow(long a, long p) {
         if (p == 0) return 1;
         long b = pow(a, p/2);
-        b = (b * b) % mod;
+        b = b * b;
         if (p % 2 == 1) b *= a;
         return b % mod;
     }
@@ -71,82 +71,43 @@ public class CodeJam {
 
     int N;
     int R;
-    int[][] C = new int[101][101];
+    int[][] C = new int[10][10];
     int M;
-    int D;
     int mod = 1_000_000_007;
     long IMPO;
-    long ans;
+    int ans;
 
     int[] dx = new int[]{1,0, -1, 0};
     int[] dy = new int[]{0, -1, 0, 1};
     Map<String, Boolean> dp = new HashMap<>();
 
-    List<List<Integer>> graph = new ArrayList<>();
-    int[] parent;
-    boolean[][] visited;
-    long[][] table;
-    class Node {
-        long value;
-        int x;
-        int y;
-        public Node(int x, int y, long v) {
-            this.x = x;
-            this.y = y;
-            this.value = v;
+    class Edge {
+        int u;
+        int v;
+        int start;
+        int duration;
+        public Edge(int u, int v, int l, int d) {
+            this.u = u;
+            this.v = v;
+            this.start = l;
+            this.duration = d;
         }
     }
-    public void run(BufferedReader br, PrintWriter out) throws IOException {
+    List<List<Integer>> graph = new ArrayList<>();
+    List<Edge> edges = new ArrayList<>();
+    int[] parent;
+    boolean[] visited;
+    public void run(Scanner scanner) throws IOException {
 
-        IMPO = 1000000000;
-        IMPO = IMPO * 1000000000l;
-
-        String[] sp = br.readLine().split(" ");
-        N = Integer.parseInt(sp[0]);
-        M = Integer.parseInt(sp[1]);
-
-        for (int i = 1; i <= 100; i++) {
-            C[i][0] = 1;
-            C[i][i] = 1;
-            for (int j = 1; j < i; j++) {
-                C[i][j] = (C[i-1][j-1] + C[i-1][j]) % mod;
-            }
-        }
-        long[] pow = new long[2*N+1];
-        pow[0] = 1;
-        for (int i = 1; i <= 2*N; i++) {
-            pow[i] = pow[i-1] * 2;
-            pow[i] %= mod;
-        }
-        ans = 1;
-        long[] dp = new long[N*2+1];
-        dp[0] = 1;
-        for (int i = 1; i <= N*2; i++) {
-            ans *= i;
-            ans %= mod;
-            dp[i] = ans;
-        }
-        int sign = -1;
-        for (int i = 1; i <= M; i++) {
-//            long tmp = dp[2*N - i] * C[M][i];
-            long t = (dp[i] * dp[M-i]) % mod;
-            t = pow(t, mod-2);
-            t = (dp[M] * t) % mod;
-            long tmp = dp[2*N - i] * t;
-            tmp %= mod;
-            tmp *= pow[i];
-            tmp %= mod;
-            ans += tmp * sign;
-            ans = (ans + mod) % mod;
-            sign *= -1;
-        }
-
+        long a = scanner.nextInt();
+        long b = scanner.nextInt();
+        long k = scanner.nextInt();
+        long ans = (a-b) * (k / 2);
+        if (k % 2 == 1) ans += a;
 //        if (ans == IMPO) {
 //            System.out.println("IMPOSSIBLE");
-//            out.println("IMPOSSIBLE");
 //        } else {
             System.out.println(ans);
-            out.println(ans);
 //        }
     }
 
@@ -158,34 +119,23 @@ public class CodeJam {
 //      String outFile = "C://Users/user/eclipse-workspace/algo/A-small-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/A-large-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/A-large-out.txt";
-//      String fileName = "C://Users/user/eclipse-workspace/algo/B-small-practice.in";
-//      String outFile = "C://Users/user/eclipse-workspace/algo/B-small-out.txt";
-//      String fileName = "C://Users/user/eclipse-workspace/algo/B-large-practice.in";
-//      String outFile = "C://Users/user/eclipse-workspace/algo/B-large-out.txt";
+//      String fileName = "/Users/mobike/IdeaProjects/algo/B-small-practice.in";
+//      String outFile = "/Users/mobike/IdeaProjects/algo/B-small-out.txt";
+//      String fileName = "/Users/mobike/IdeaProjects/algo/B-large-practice.in";
+//      String outFile = "/Users/mobike/IdeaProjects/algo/B-large-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/C-small-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/C-small-out.txt";
-      String fileName = "C://Users/user/eclipse-workspace/algo/C-large-practice.in";
-      String outFile = "C://Users/user/eclipse-workspace/algo/C-large-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/D-small-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/D-small-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/D-large-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/D-large-out.txt";
-      
-      BufferedReader br = new BufferedReader(new FileReader(fileName));
-      PrintWriter out = new PrintWriter(outFile);
 
-        System.out.println(new Date());
-        int T = Integer.parseInt(br.readLine());
+        Scanner scanner = new Scanner(System.in);
+
+        int T = scanner.nextInt();
         for (int i = 1; i <= T; i++) {
-        	out.print("Case #" + i + ": ");
-            System.out.print("Case #" + i + ": ");
-            CodeJam jam = new CodeJam();
-            jam.run(br, out);
-            out.flush();
+            CodeForces jam = new CodeForces();
+            jam.run(scanner);
         }
-        out.close();
-        br.close();
-        System.out.println("Finished");
-        System.out.println(new Date());
     }
 }
