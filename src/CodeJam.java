@@ -112,6 +112,7 @@ public class CodeJam {
         C = Integer.parseInt(sp[1]);
         int n = Integer.parseInt(sp[2]);
         D = Integer.parseInt(sp[3]);
+//        System.out.println(R + " " + C + " " + n + " " + D);
         List<int[]> points = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             sp = br.readLine().split(" ");
@@ -178,6 +179,7 @@ public class CodeJam {
         for (int i = 0; i < N; i++) for (int j = 0; j < M; j++) table[i][j] = -1;
         for (int i = 0; i < points.size(); i++) {
             table[rmapX.get(points.get(i)[0])][rmapY.get(points.get(i)[1])] = points.get(i)[2];
+//            table[points.get(i)[0]][points.get(i)[1]] = points.get(i)[2];
         }
 
         PriorityQueue<Node> pq = new PriorityQueue<>(new Comparator<Node>() {
@@ -199,8 +201,9 @@ public class CodeJam {
                 int x = cur.x + dx[k];
                 int y = cur.y + dy[k];
                 if (inTable(x, y)) {
-                    if (table[x][y] == -1) {
-                        table[x][y] = cur.value + D;
+                    long tmp = table[cur.x][cur.y] + diff(x, y, cur.x, cur.y) * D;
+                    if (table[x][y] == -1 || tmp < table[x][y]) {
+                        table[x][y] = tmp;
                         pq.add(new Node(x, y, table[x][y]));
                     }
                 }
@@ -211,7 +214,10 @@ public class CodeJam {
         for (int i = 0; i < N; i++) for (int j = 0; j < M; j++) {
             ans += table[i][j];
             ans %= mod;
-            if (i > 0) {
+            if (i > 0 && j > 0) {
+                long minX = Math.min(table[i-1][j], table[i][j]);
+                long maxX = Math.max(table[i-1][j], table[i][j]);
+            } else if (i > 0) {
                 long min = Math.min(table[i-1][j], table[i][j]);
                 long max = Math.max(table[i-1][j], table[i][j]);
                 long diff = mapX[i] - mapX[i-1] - 1;
@@ -261,10 +267,24 @@ public class CodeJam {
 //        }
     }
 
+    private long diff(int x, int y, int r, int c) {
+        long x1 = mapX[x];
+        long y1 = mapY[y];
+        long r1 = mapX[r];
+        long c1 = mapY[c];
+        return Math.abs(x1 - r1)  + Math.abs(y1 - c1);
+    }
+
+    private long sum(long start, long d, long len) {
+        long ans = (start + (start + d * (len - 1))) % mod;
+        ans = ans * len / 2 % mod;
+        return ans;
+    }
+
     public static void main(String[] args) throws NumberFormatException, IOException {
         
-//      String fileName = "C://Users/user/eclipse-workspace/algo/example.txt";
-//      String outFile = "C://Users/user/eclipse-workspace/algo/example-out.txt";
+//      String fileName = "/Users/mobike/IdeaProjects/algo/example.txt";
+//      String outFile = "/Users/mobike/IdeaProjects/algo/example-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/A-small-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/A-small-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/A-large-practice.in";
@@ -277,8 +297,8 @@ public class CodeJam {
 //      String outFile = "C://Users/user/eclipse-workspace/algo/C-small-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/C-large-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/C-large-out.txt";
-      String fileName = "C://Users/user/eclipse-workspace/algo/D-small-practice.in";
-      String outFile = "C://Users/user/eclipse-workspace/algo/D-small-out.txt";
+      String fileName = "/Users/mobike/IdeaProjects/algo/D-small-practice.in";
+      String outFile = "/Users/mobike/IdeaProjects/algo/D-small-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/D-large-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/D-large-out.txt";
       
