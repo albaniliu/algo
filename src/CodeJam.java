@@ -71,7 +71,8 @@ public class CodeJam {
 
     int N;
     int R;
-    int[][] C = new int[101][101];
+    int[][] c = new int[101][101];
+    int C;
     int M;
     int D;
     int mod = 1_000_000_007;
@@ -96,49 +97,159 @@ public class CodeJam {
             this.value = v;
         }
     }
+    int[] mapX = new int[210];
+    int[] mapY = new int[210];
+    Map<Integer, Integer> rmapX = new HashMap<>();
+    Map<Integer, Integer> rmapY = new HashMap<>();
+
     public void run(BufferedReader br, PrintWriter out) throws IOException {
 
         IMPO = 1000000000;
         IMPO = IMPO * 1000000000l;
 
         String[] sp = br.readLine().split(" ");
-        N = Integer.parseInt(sp[0]);
-        M = Integer.parseInt(sp[1]);
-
-        for (int i = 1; i <= 100; i++) {
-            C[i][0] = 1;
-            C[i][i] = 1;
-            for (int j = 1; j < i; j++) {
-                C[i][j] = (C[i-1][j-1] + C[i-1][j]) % mod;
+        R = Integer.parseInt(sp[0]);
+        C = Integer.parseInt(sp[1]);
+        int n = Integer.parseInt(sp[2]);
+        D = Integer.parseInt(sp[3]);
+        List<int[]> points = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            sp = br.readLine().split(" ");
+            int x = Integer.parseInt(sp[0]) - 1;
+            int y = Integer.parseInt(sp[1]) - 1;
+            int v = Integer.parseInt(sp[2]);
+            points.add(new int[]{x, y, v});
+        }
+        Collections.sort(points, new Comparator<int[]>() {
+            @Override
+            public int compare(int[] o1, int[] o2) {
+                return o1[0] - o2[0];
+            }
+        });
+        int index = 0;
+        mapX[index] = 0;
+        rmapX.put(0, 0);
+        for (int i = 0; i < points.size(); i++) {
+            if (points.get(i)[0] > mapX[index]) {
+                mapX[++index] = points.get(i)[0];
+                rmapX.put(points.get(i)[0], index);
             }
         }
-        long[] pow = new long[2*N+1];
-        pow[0] = 1;
-        for (int i = 1; i <= 2*N; i++) {
-            pow[i] = pow[i-1] * 2;
-            pow[i] %= mod;
+        if (mapX[index] != R-1) {
+            mapX[++index] = R-1;
+            rmapX.put(R-1, index);
         }
-        ans = 1;
-        long[] dp = new long[N*2+1];
-        dp[0] = 1;
-        for (int i = 1; i <= N*2; i++) {
-            ans *= i;
+        N = index + 1;
+
+        Collections.sort(points, new Comparator<int[]>() {
+            @Override
+            public int compare(int[] o1, int[] o2) {
+                return o1[1] - o2[1];
+            }
+        });
+
+        index = 0;
+        mapY[index] = 0;
+        rmapY.put(0, 0);
+        for (int i = 0; i < points.size(); i++) {
+            if (points.get(i)[1] > mapY[index]) {
+                mapY[++index] = points.get(i)[1];
+                rmapY.put(points.get(i)[1], index);
+            }
+        }
+        if (mapY[index] != C-1) {
+            mapY[++index] = C-1;
+            rmapY.put(C-1, index);
+        }
+        M = index + 1;
+        table = new long[N][M];
+        for (int i = 0; i < points.size(); i++) {
+            for (int j = i + 1; j < points.size(); j++) {
+                long d = Math.abs(points.get(i)[0] - points.get(j)[0]) +
+                        Math.abs(points.get(i)[1] - points.get(j)[1]);
+                long diff = Math.abs(points.get(i)[2] - points.get(j)[2]);
+                if (diff > d * D) {
+                    System.out.println("IMPOSSIBLE");
+                    out.println("IMPOSSIBLE");
+                    return;
+                }
+            }
+        }
+        for (int i = 0; i < N; i++) for (int j = 0; j < M; j++) table[i][j] = -1;
+        for (int i = 0; i < points.size(); i++) {
+            table[rmapX.get(points.get(i)[0])][rmapY.get(points.get(i)[1])] = points.get(i)[2];
+        }
+
+        PriorityQueue<Node> pq = new PriorityQueue<>(new Comparator<Node>() {
+            @Override
+            public int compare(Node o1, Node o2) {
+                if (o1.value == o2.value) return 0;
+                return o1.value - o2.value < 0? -1: 1;
+            }
+        });
+
+        for (int i = 0; i < N; i++) for (int j = 0; j < M; j++) {
+            if (table[i][j] != -1) {
+                pq.add(new Node(i, j, table[i][j]));
+            }
+        }
+        while (!pq.isEmpty()) {
+            Node cur = pq.poll();
+            for (int k = 0; k < 4; k++) {
+                int x = cur.x + dx[k];
+                int y = cur.y + dy[k];
+                if (inTable(x, y)) {
+                    if (table[x][y] == -1) {
+                        table[x][y] = cur.value + D;
+                        pq.add(new Node(x, y, table[x][y]));
+                    }
+                }
+            }
+        }
+
+        ans = 0;
+        for (int i = 0; i < N; i++) for (int j = 0; j < M; j++) {
+            ans += table[i][j];
             ans %= mod;
-            dp[i] = ans;
-        }
-        int sign = -1;
-        for (int i = 1; i <= M; i++) {
-//            long tmp = dp[2*N - i] * C[M][i];
-            long t = (dp[i] * dp[M-i]) % mod;
-            t = pow(t, mod-2);
-            t = (dp[M] * t) % mod;
-            long tmp = dp[2*N - i] * t;
-            tmp %= mod;
-            tmp *= pow[i];
-            tmp %= mod;
-            ans += tmp * sign;
-            ans = (ans + mod) % mod;
-            sign *= -1;
+            if (i > 0) {
+                long min = Math.min(table[i-1][j], table[i][j]);
+                long max = Math.max(table[i-1][j], table[i][j]);
+                long diff = mapX[i] - mapX[i-1] - 1;
+                long inc = (max - min) / D;
+                inc = Math.min(diff, inc);
+                long tmp = ((min+D) + (min + D *inc)) % mod;
+                tmp = (tmp * inc / 2) % mod;
+                ans = (ans + tmp) % mod;
+                long left = diff - inc;
+                long minI = (left + 1) / 2;
+                long maxI = left / 2;
+                tmp = ((min + D *inc) + ((min + D *inc + minI * D))) % mod;
+                tmp = (tmp * minI / 2) % mod;
+                ans = (ans + tmp) % mod;
+
+                tmp = ((max + D) + ((max + maxI * D))) % mod;
+                tmp = (tmp * maxI / 2) % mod;
+                ans = (ans + tmp) % mod;
+            } else if (j > 0) {
+                long min = Math.min(table[i][j - 1], table[i][j]);
+                long max = Math.max(table[i][j - 1], table[i][j]);
+                long diff = mapY[j] - mapY[j-1] - 1;
+                long inc = (max - min) / D;
+                inc = Math.min(diff, inc);
+                long tmp = ((min+D) + (min + D *inc)) % mod;
+                tmp = (tmp * inc / 2) % mod;
+                ans = (ans + tmp) % mod;
+                long left = diff - inc;
+                long minI = (left + 1) / 2;
+                long maxI = left / 2;
+                tmp = ((min + D *inc) + ((min + D *inc + minI * D))) % mod;
+                tmp = (tmp * minI / 2) % mod;
+                ans = (ans + tmp) % mod;
+
+                tmp = ((max + D) + ((max + maxI * D))) % mod;
+                tmp = (tmp * maxI / 2) % mod;
+                ans = (ans + tmp) % mod;
+            }
         }
 
 //        if (ans == IMPO) {
@@ -164,10 +275,10 @@ public class CodeJam {
 //      String outFile = "C://Users/user/eclipse-workspace/algo/B-large-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/C-small-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/C-small-out.txt";
-      String fileName = "C://Users/user/eclipse-workspace/algo/C-large-practice.in";
-      String outFile = "C://Users/user/eclipse-workspace/algo/C-large-out.txt";
-//      String fileName = "C://Users/user/eclipse-workspace/algo/D-small-practice.in";
-//      String outFile = "C://Users/user/eclipse-workspace/algo/D-small-out.txt";
+//      String fileName = "C://Users/user/eclipse-workspace/algo/C-large-practice.in";
+//      String outFile = "C://Users/user/eclipse-workspace/algo/C-large-out.txt";
+      String fileName = "C://Users/user/eclipse-workspace/algo/D-small-practice.in";
+      String outFile = "C://Users/user/eclipse-workspace/algo/D-small-out.txt";
 //      String fileName = "C://Users/user/eclipse-workspace/algo/D-large-practice.in";
 //      String outFile = "C://Users/user/eclipse-workspace/algo/D-large-out.txt";
       
