@@ -1,10 +1,12 @@
+package codejam;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
-public class CodeJam {
+public class Round_3_2017_D {
     class Pair<K, V> {
         K first;
         V second;
@@ -327,7 +329,7 @@ public class CodeJam {
         for (int i = 1; i <= T; i++) {
         	out.print("Case #" + i + ": ");
             System.out.print("Case #" + i + ": ");
-            CodeJam jam = new CodeJam();
+            Round_3_2017_D jam = new Round_3_2017_D();
             jam.run(br, out);
             out.flush();
         }
