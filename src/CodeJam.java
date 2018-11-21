@@ -50,6 +50,17 @@ public class CodeJam {
         return countOne(a & (a-1)) + 1;
     }
 
+    private long mul(long a, long b) {
+        a %= mod;
+        b %= mod;
+        return (a * b) % mod;
+    }
+
+    private void add(long a) {
+        ans += a;
+        ans %= mod;
+    }
+
     private static int sdiv(int a, int b) {
         return (a +b -1) / b;
     }
@@ -71,7 +82,6 @@ public class CodeJam {
 
     int N;
     int R;
-    int[][] c = new int[101][101];
     int C;
     int M;
     int D;
@@ -97,10 +107,9 @@ public class CodeJam {
             this.value = v;
         }
     }
-    int[] mapX = new int[210];
-    int[] mapY = new int[210];
-    Map<Integer, Integer> rmapX = new HashMap<>();
-    Map<Integer, Integer> rmapY = new HashMap<>();
+
+    long a,b,c,d;
+    int row1, row2, col1, col2;
 
     public void run(BufferedReader br, PrintWriter out) throws IOException {
 
@@ -112,151 +121,114 @@ public class CodeJam {
         C = Integer.parseInt(sp[1]);
         int n = Integer.parseInt(sp[2]);
         D = Integer.parseInt(sp[3]);
-//        System.out.println(R + " " + C + " " + n + " " + D);
         List<int[]> points = new ArrayList<>();
+        TreeSet<Integer> setX = new TreeSet<>();
+        setX.add(0);
+        setX.add(R);
+        TreeSet<Integer> setY = new TreeSet<>();
+        setY.add(0);
+        setY.add(C);
         for (int i = 0; i < n; i++) {
             sp = br.readLine().split(" ");
             int x = Integer.parseInt(sp[0]) - 1;
             int y = Integer.parseInt(sp[1]) - 1;
             int v = Integer.parseInt(sp[2]);
             points.add(new int[]{x, y, v});
+            setX.add(x);
+            setY.add(y);
         }
-        Collections.sort(points, new Comparator<int[]>() {
-            @Override
-            public int compare(int[] o1, int[] o2) {
-                return o1[0] - o2[0];
-            }
-        });
-        int index = 0;
-        mapX[index] = 0;
-        rmapX.put(0, 0);
-        for (int i = 0; i < points.size(); i++) {
-            if (points.get(i)[0] > mapX[index]) {
-                mapX[++index] = points.get(i)[0];
-                rmapX.put(points.get(i)[0], index);
+        for (int i = 0; i < points.size(); i++) for (int j = i +1; j < points.size(); j++) {
+            long d = diff(points.get(i)[0], points.get(i)[1], points.get(j)[0], points.get(j)[1]);
+            if (Math.abs(points.get(i)[2] - points.get(j)[2]) > d * D) {
+                System.out.println("IMPOSSIBLE");
+                out.println("IMPOSSIBLE");
+                return;
             }
         }
-        if (mapX[index] != R-1) {
-            mapX[++index] = R-1;
-            rmapX.put(R-1, index);
-        }
-        N = index + 1;
-
-        Collections.sort(points, new Comparator<int[]>() {
-            @Override
-            public int compare(int[] o1, int[] o2) {
-                return o1[1] - o2[1];
-            }
-        });
-
-        index = 0;
-        mapY[index] = 0;
-        rmapY.put(0, 0);
-        for (int i = 0; i < points.size(); i++) {
-            if (points.get(i)[1] > mapY[index]) {
-                mapY[++index] = points.get(i)[1];
-                rmapY.put(points.get(i)[1], index);
-            }
-        }
-        if (mapY[index] != C-1) {
-            mapY[++index] = C-1;
-            rmapY.put(C-1, index);
-        }
-        M = index + 1;
-        table = new long[N][M];
-        for (int i = 0; i < points.size(); i++) {
-            for (int j = i + 1; j < points.size(); j++) {
-                long d = Math.abs(points.get(i)[0] - points.get(j)[0]) +
-                        Math.abs(points.get(i)[1] - points.get(j)[1]);
-                long diff = Math.abs(points.get(i)[2] - points.get(j)[2]);
-                if (diff > d * D) {
-                    System.out.println("IMPOSSIBLE");
-                    out.println("IMPOSSIBLE");
-                    return;
-                }
-            }
-        }
-        for (int i = 0; i < N; i++) for (int j = 0; j < M; j++) table[i][j] = -1;
-        for (int i = 0; i < points.size(); i++) {
-            table[rmapX.get(points.get(i)[0])][rmapY.get(points.get(i)[1])] = points.get(i)[2];
-//            table[points.get(i)[0]][points.get(i)[1]] = points.get(i)[2];
-        }
-
-        PriorityQueue<Node> pq = new PriorityQueue<>(new Comparator<Node>() {
-            @Override
-            public int compare(Node o1, Node o2) {
-                if (o1.value == o2.value) return 0;
-                return o1.value - o2.value < 0? -1: 1;
-            }
-        });
-
-        for (int i = 0; i < N; i++) for (int j = 0; j < M; j++) {
-            if (table[i][j] != -1) {
-                pq.add(new Node(i, j, table[i][j]));
-            }
-        }
-        while (!pq.isEmpty()) {
-            Node cur = pq.poll();
-            for (int k = 0; k < 4; k++) {
-                int x = cur.x + dx[k];
-                int y = cur.y + dy[k];
-                if (inTable(x, y)) {
-                    long tmp = table[cur.x][cur.y] + diff(x, y, cur.x, cur.y) * D;
-                    if (table[x][y] == -1 || tmp < table[x][y]) {
-                        table[x][y] = tmp;
-                        pq.add(new Node(x, y, table[x][y]));
-                    }
-                }
-            }
-        }
-
+        List<Integer> rows = new ArrayList<>();
+        List<Integer> cols = new ArrayList<>();
+        for (int x: setX) rows.add(x);
+        for (int y: setY) cols.add(y);
         ans = 0;
-        for (int i = 0; i < N; i++) for (int j = 0; j < M; j++) {
-            ans += table[i][j];
-            ans %= mod;
-            if (i > 0 && j > 0) {
-                long minX = Math.min(table[i-1][j], table[i][j]);
-                long maxX = Math.max(table[i-1][j], table[i][j]);
-            } else if (i > 0) {
-                long min = Math.min(table[i-1][j], table[i][j]);
-                long max = Math.max(table[i-1][j], table[i][j]);
-                long diff = mapX[i] - mapX[i-1] - 1;
-                long inc = (max - min) / D;
-                inc = Math.min(diff, inc);
-                long tmp = ((min+D) + (min + D *inc)) % mod;
-                tmp = (tmp * inc / 2) % mod;
-                ans = (ans + tmp) % mod;
-                long left = diff - inc;
-                long minI = (left + 1) / 2;
-                long maxI = left / 2;
-                tmp = ((min + D *inc) + ((min + D *inc + minI * D))) % mod;
-                tmp = (tmp * minI / 2) % mod;
-                ans = (ans + tmp) % mod;
+        for (int i = 0; i < rows.size() - 1; i++) for (int j = 0; j < cols.size() - 1; j++) {
+            row1 = rows.get(i); row2 = rows.get(i+1) - 1;
+            col1 = cols.get(j); col2 = cols.get(j+1) - 1;
+            a = countValue(row1, col1, points);
+            b = countValue(row1, col2, points);
+            c = countValue(row2, col1, points);
+            d = countValue(row2, col2, points);
 
-                tmp = ((max + D) + ((max + maxI * D))) % mod;
-                tmp = (tmp * maxI / 2) % mod;
-                ans = (ans + tmp) % mod;
-            } else if (j > 0) {
-                long min = Math.min(table[i][j - 1], table[i][j]);
-                long max = Math.max(table[i][j - 1], table[i][j]);
-                long diff = mapY[j] - mapY[j-1] - 1;
-                long inc = (max - min) / D;
-                inc = Math.min(diff, inc);
-                long tmp = ((min+D) + (min + D *inc)) % mod;
-                tmp = (tmp * inc / 2) % mod;
-                ans = (ans + tmp) % mod;
-                long left = diff - inc;
-                long minI = (left + 1) / 2;
-                long maxI = left / 2;
-                tmp = ((min + D *inc) + ((min + D *inc + minI * D))) % mod;
-                tmp = (tmp * minI / 2) % mod;
-                ans = (ans + tmp) % mod;
+            for (int rot = 0; rot < 4; rot++) {
+                if (aBest(row1, col1)) {
+                    int low = 0;
+                    int hi = Math.max(col2 - col1, row2 - row1) + 1;
+                    while (low + 1 < hi) {
+                        int mid = low + (hi - low) / 2;
+                        if (aBest(row1 + mid, col1) && aBest(row1, col1 + mid)) {
+                            low = mid;
+                        } else {
+                            hi = mid;
+                        }
+                    }
+                    add(mul(a, sum(1, low+1)));
+                    add(mul(D, sum(0, low)));
+                    add(mul(D, squereSum(low)));
+                    int memo = low;
 
-                tmp = ((max + D) + ((max + maxI * D))) % mod;
-                tmp = (tmp * maxI / 2) % mod;
-                ans = (ans + tmp) % mod;
+                    low = 0;
+                    hi = Math.max(col2 - col1, row2 - row1) + 1;
+                    while (low + 1 < hi) {
+                        int mid = low + (hi - low) / 2;
+                        if (aBest(row1 + mid, col1) || aBest(row1, col1 + mid)) {
+                            low = mid;
+                        } else {
+                            hi = mid;
+                        }
+                    }
+                    add(mul(memo + 1, mul(a, low - memo)));
+                    add(mul(memo + 1, mul(D, sum(memo+1, low))));
+
+                    int memo2 = low;
+                    low = memo2;
+                    hi = row2 - row1 + col2 - col1 + 1;
+                    while (low + 1 < hi) {
+                        int mid = low + (hi - low) / 2;
+                        if (aBest(row1 + memo2, col1 + mid - memo2) || aBest(row1 + mid - memo2, col1 + memo2)) {
+                            low = mid;
+                        } else {
+                            hi = mid;
+                        }
+                    }
+//                    for (int k = memo2 + 1; k <= low; k++) {
+//                        long tmp = (a + k * D) * (memo - k + memo2 + 1);
+//                    }
+                    add(mul(mul(a, memo+1+memo2), low-memo2));
+                    add(mul(-a, sum(memo2+1, low)));
+                    add(mul(mul(D, memo+1+memo2), sum(memo2+1, low)));
+                    add(mul(-D, squareSum(memo2 + 1, low)));
+                }
+                a--;
+                if (rot % 2 == 0) {
+                    long tmp = a;
+                    a = b;
+                    b = tmp;
+                    tmp = c;
+                    c = d;
+                    d = tmp;
+                }
+                if (rot == 1) {
+                    long tmp = a;
+                    a = c;
+                    c = tmp;
+                    tmp = b;
+                    b = d;
+                    d = tmp;
+                }
             }
         }
+
+        ans = (ans % mod) + mod;
+        ans %= mod;
 
 //        if (ans == IMPO) {
 //            System.out.println("IMPOSSIBLE");
@@ -267,11 +239,24 @@ public class CodeJam {
 //        }
     }
 
-    private long diff(int x, int y, int r, int c) {
-        long x1 = mapX[x];
-        long y1 = mapY[y];
-        long r1 = mapX[r];
-        long c1 = mapY[c];
+    private boolean aBest(int x, int y) {
+        if (x < row1 || x > row2 || y < col1 || y > col2) return false;
+        long da = diff(x, y, row1, col1) * D + a;
+        long db = diff(x, y, row1, col2) * D + b;
+        long dc = diff(x, y, row2, col1) * D + c;
+        long dd = diff(x, y, row2, col2) * D + d;
+        return da <= db && da <= dc && da <= dd;
+    }
+
+    private long countValue(int x, int y, List<int[]> points) {
+        long ans = Long.MAX_VALUE;
+        for (int[] p: points) {
+            ans = Math.min(ans, p[2] + diff(x, y, p[0], p[1]) * D);
+        }
+        return ans;
+    }
+
+    private long diff(int x1, int y1, int r1, int c1) {
         return Math.abs(x1 - r1)  + Math.abs(y1 - c1);
     }
 
@@ -280,6 +265,38 @@ public class CodeJam {
         ans = ans * len / 2 % mod;
         return ans;
     }
+
+    private long sum(long start, long end) {
+        long a = start + end;
+        long b = end - start + 1;
+        if (a % 2 == 0) a/=2;
+        else b /= 2;
+        return (a * b) % mod;
+    }
+
+    private long squereSum(long n) {
+        long a = n;
+        long b = n+1;
+        long c = 2*n+1;
+        if (a % 2 == 0) a /= 2;
+        else if (b % 2 == 0) b /= 2;
+        else c /= 2;
+
+        if (a % 3 == 0) a /= 3;
+        else if (b % 3 == 0) b /= 3;
+        else c /= 3;
+        a = (a * b) % mod;
+        a = (a * c) % mod;
+        return a;
+    }
+
+    private  long squareSum(long a, long b) {
+        long B = squereSum(b);
+        long A = squereSum(a - 1);
+        return (B - A + mod) % mod;
+    }
+
+
 
     public static void main(String[] args) throws NumberFormatException, IOException {
         
