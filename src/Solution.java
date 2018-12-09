@@ -69,74 +69,55 @@ class Node {
 
 public class Solution {
 
-    int mod = 1_000_000_007;
-	List<Integer> order = new ArrayList<>();
-	Map<Integer, List<Integer>> orderMap = new HashMap<>();
-	int[][] table;
-	int M;
-	public String shortestSuperstring(String[] A) {
-		int n = A.length;
-		M = 1<<n;
-		int[][] dp = new int[n][1<<n];
-		table = new int[n][n];
-		for (int i = 0; i < n; i++) for (int j = 0; j<n; j++) if (i != j) {
-			for (int k = 0; k < A[i].length(); k++) {
-				String subString = A[i].substring(k);
-				if (A[j].startsWith(subString)) {
-					table[i][j] = subString.length();
-					break;
+	public int tallestBillboard(int[] rods) {
+		boolean[] can = new boolean[10000];
+		can[0] = true;
+		int n = rods.length;
+		int[] dp = new int[1 << n];
+		dp[0] = 0;
+		Map<Integer, List<Integer>> map = new HashMap<>();
+		for (int i = 0; i < rods.length; i++) {
+			if (!map.containsKey(rods[i])) {
+				map.put(rods[i], new ArrayList<>());
+			}
+			map.get(rods[i]).add(1<<i);
+			dp[1<<i] = rods[i];
+		}
+		for (int set = 1; set < 1<< n; set++) {
+			if ((set & (set - 1)) != 0) {
+				int tmp = set & (set - 1);
+				int other = set ^ tmp;
+				int sum = dp[tmp] + dp[other];
+				dp[set] = sum;
+				if (!map.containsKey(sum)) {
+					map.put(sum, new ArrayList<>());
+				}
+				map.get(sum).add(set);
+			}
+		}
+		int ans = 0;
+		for (Map.Entry<Integer, List<Integer>> entry: map.entrySet()) {
+			if (entry.getValue().size() > 1) {
+				List<Integer> list = entry.getValue();
+				boolean needs = true;
+				for (int i = 0; i < list.size(); i++) {
+					if (!needs) break;
+					for (int j = i + 1; j < list.size(); j++) {
+						if ((list.get(i) & list.get(j)) == 0) {
+							needs = false;
+							ans = Math.max(ans, entry.getKey());
+						}
+					}
 				}
 			}
 		}
-		int ans = Integer.MAX_VALUE;
-		for (int i = 0; i < n; i++) {
-			List<Integer> order = new ArrayList<>();
-			int tmp = solve(i, (1<<n) - 1 - (1<<i), dp, A, order) + A[i].length();
-			order.add(i);
-			if (tmp < ans) {
-				ans = tmp;
-				this.order = order;
-			}
-		}
-		Collections.reverse(order);
-		StringBuilder sb = new StringBuilder();
-		sb.append(A[order.get(0)]);
-		for (int i = 1; i < order.size(); i++) {
-			sb.append(A[order.get(i)].substring(table[order.get(i-1)][order.get(i)]));
-		}
-		return sb.toString();
+		return ans;
 	}
-
-	private int solve(int i, int set, int[][] dp, String[] A, List<Integer> order) {
-		if (set == 0) return 0;
-		if (dp[i][set] != 0) {
-			order.addAll(orderMap.get(i*M + set));
-			return dp[i][set];
-		}
-		int ans = Integer.MAX_VALUE;
-		List<Integer> order2 = new ArrayList<>();
-		for (int j = 0; j < A.length; j++) if ((set & (1<<j)) > 0) {
-			List<Integer> torder =new ArrayList<>();
-			if (j == 3 && set == 24) {
-				int a = 0;
-			}
-			int tmp = solve(j, set - (1<<j), dp, A, torder) + (A[j].length() - table[i][j]);
-			torder.add(j);
-			if (tmp < ans) {
-				order2 = torder;
-				ans = tmp;
-			}
-		}
-		order.addAll(order2);
-		orderMap.put(i * M + set, order2);
-		return dp[i][set] = ans;
-	}
-
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 //		System.out.println("[[1,1],[1,3],[3,1],[3,3],[2,2]]".replace("[", "{").replace("]", "}"));
 		Solution s = new Solution();
-		int[] A = new int[] {0,0,0,0,0,0};
+		int[] A = new int[] {34,28,39,23,32,26,23,24,26,24,26,29,27,34,30,38,34,37,36};
 		int[] B = new int[] {327716,69772,667805,856849,78755,606982,696937,207697,275337,290550};
 		int[][] hits = new int[][] {{5,1},{1,3}};
 		int[][] grid = new int[][] {{1,1},{1,3},{3,1},{3,3},{2,2}};
@@ -159,7 +140,7 @@ public class Solution {
 		Semaphore semaphore = new Semaphore(5);
 		semaphore.tryAcquire(10, TimeUnit.MILLISECONDS);
 		semaphore.release();
-		System.out.println(s.shortestSuperstring(emails));
+		System.out.println(s.largestComponentSize(A));
 	}
 
 }
